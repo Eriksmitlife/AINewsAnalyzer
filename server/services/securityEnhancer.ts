@@ -304,21 +304,27 @@ class SecurityEnhancer {
   encrypt(text: string, key: string): string {
     const algorithm = 'aes-256-gcm';
     const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher(algorithm, key);
+    const derivedKey = crypto.scryptSync(key, 'salt', 32);
+    const cipher = crypto.createCipheriv(algorithm, derivedKey, iv);
     
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
+    const authTag = cipher.getAuthTag();
     
-    return iv.toString('hex') + ':' + encrypted;
+    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
   }
 
   decrypt(encryptedText: string, key: string): string {
     const algorithm = 'aes-256-gcm';
     const textParts = encryptedText.split(':');
     const iv = Buffer.from(textParts.shift()!, 'hex');
+    const authTag = Buffer.from(textParts.shift()!, 'hex');
     const encrypted = textParts.join(':');
     
-    const decipher = crypto.createDecipher(algorithm, key);
+    const derivedKey = crypto.scryptSync(key, 'salt', 32);
+    const decipher = crypto.createDecipheriv(algorithm, derivedKey, iv);
+    decipher.setAuthTag(authTag);
+    
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     
