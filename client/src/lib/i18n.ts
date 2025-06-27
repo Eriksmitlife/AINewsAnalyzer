@@ -182,7 +182,7 @@ class I18nService {
 export const i18n = new I18nService();
 
 // React Provider Component
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 const I18nContext = createContext<{
   language: string;
@@ -215,9 +215,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return i18n.translate(key);
   };
 
-  return (
-    <I18nContext.Provider value={{ language, translate, setLanguage }}>
-      {children}
-    </I18nContext.Provider>
+  return React.createElement(
+    I18nContext.Provider,
+    { value: { language, translate, setLanguage } },
+    children
   );
 }

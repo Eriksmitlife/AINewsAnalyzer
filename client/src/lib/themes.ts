@@ -132,7 +132,7 @@ class ThemeService {
 export const themeService = new ThemeService();
 
 // React Provider Component
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 const ThemeContext = createContext<{
   theme: Theme;
@@ -159,9 +159,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     themeService.setTheme(themeId);
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  return React.createElement(
+    ThemeContext.Provider,
+    { value: { theme, setTheme } },
+    children
   );
 }
