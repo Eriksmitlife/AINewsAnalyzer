@@ -57,7 +57,7 @@ export function useAuth() {
       }
 
       // Если оба метода не удались, создаем демо пользователя для тестирования
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.DEV) {
         setUser({
           id: 'demo-user',
           email: 'demo@autonews.ai',

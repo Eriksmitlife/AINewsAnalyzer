@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createConfig, WagmiProvider, useAccount, useConnect, useDisconnect } from 'wagmi';
+import { createConfig, WagmiProvider, useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { mainnet, polygon, arbitrum } from 'wagmi/chains';
 import { injected, walletConnect, metaMask } from 'wagmi/connectors';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +11,7 @@ const config = createConfig({
     injected(),
     metaMask(),
     walletConnect({
-      projectId: process.env.VITE_WALLETCONNECT_PROJECT_ID || 'your-project-id',
+      projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'your-project-id',
     }),
   ],
 });
