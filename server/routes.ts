@@ -1,14 +1,16 @@
 import type { Express, Application } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { storage } from "./storage";
 import { aiService } from "./services/aiService";
 import { newsService } from "./services/newsService";
 import { nftService } from "./services/nftService";
 import { analyticsService } from "./services/analyticsService";
 import { automationService } from "./services/automationService";
-import { realtimeService } from "./services/realtimeService";
 import { marketPredictionService } from "./services/marketPredictionService";
+import { monitoringService } from "./services/monitoringService";
+import { loggingService } from "./services/loggingService";
+import { realtimeService } from "./services/realtimeService";
 import { gamificationService } from "./services/gamificationService";
 import { recommendationService } from "./services/recommendationService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
@@ -28,9 +30,7 @@ import {
   corsMiddleware,
   suspiciousActivityDetector
 } from "./middleware/securityMiddleware";
-import { monitoringService } from "./services/monitoringService";
 import { cacheService, cacheMiddleware } from "./services/cacheService";
-import { loggingService } from "./services/loggingService";
 
 export async function registerRoutes(app: Application): Promise<Server> {
   // Apply comprehensive middleware stack

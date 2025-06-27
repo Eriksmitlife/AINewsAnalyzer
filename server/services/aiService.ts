@@ -174,7 +174,8 @@ class AIService {
     let score = 0.5; // base score
     
     // Recent articles score higher
-    const hoursSincePublished = (Date.now() - new Date(article.publishedAt).getTime()) / (1000 * 60 * 60);
+    const publishedDate = article.publishedAt ? new Date(article.publishedAt) : new Date();
+    const hoursSincePublished = (Date.now() - publishedDate.getTime()) / (1000 * 60 * 60);
     if (hoursSincePublished < 24) score += 0.3;
     else if (hoursSincePublished < 48) score += 0.2;
     else if (hoursSincePublished < 72) score += 0.1;
@@ -322,7 +323,7 @@ class AIService {
         { trait_type: "Author", value: article.author || "Unknown" },
         { trait_type: "Source", value: "AutoNews.AI" },
         { trait_type: "Article ID", value: article.id },
-        { trait_type: "Publication Date", value: new Date(article.publishedAt).toISOString().split('T')[0] },
+        { trait_type: "Publication Date", value: article.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0] },
         { trait_type: "Rarity", value: this.calculateRarity(article) },
         ...(metadata.attributes || [])
       ],
@@ -331,7 +332,8 @@ class AIService {
   }
 
   private calculateRarity(article: Article): string {
-    const hoursSincePublished = (Date.now() - new Date(article.publishedAt).getTime()) / (1000 * 60 * 60);
+    const publishedDate = article.publishedAt ? new Date(article.publishedAt) : new Date();
+    const hoursSincePublished = (Date.now() - publishedDate.getTime()) / (1000 * 60 * 60);
     
     if (hoursSincePublished < 1) return "Legendary";
     if (hoursSincePublished < 6) return "Epic";
@@ -353,6 +355,34 @@ class AIService {
       });
     } catch (error) {
       console.error('Failed to record metric:', error);
+    }
+  }
+
+  async rewriteContent(content: string, style?: string): Promise<string> {
+    const isApiAvailable = await this.checkApiAvailability();
+    
+    if (!isApiAvailable || !process.env.OPENAI_API_KEY) {
+      return content;
+    }
+
+    try {
+      const prompt = `Rewrite the following content to be more engaging and professional${style ? ` in a ${style} style` : ''}:
+
+${content}
+
+Keep the core information but make it more compelling and easier to read.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      return response.choices[0]?.message?.content || content;
+    } catch (error) {
+      console.error('Error rewriting content:', error);
+      return content;
     }
   }
 }

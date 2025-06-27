@@ -50,19 +50,34 @@ function App() {
 function AppContent() {
   const { user } = useAuth();
 
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/landing" element={<Landing />} />
+        <Route path="*" element={<Navigate to="/landing" replace />} />
+      </Routes>
+    );
+  }
+
   return (
-    <Routes>
-      <Route path="/landing" element={<Landing />} />
-      <Route path="/*" element={
-        user ? (
-          <Layout>
-            <App />
-          </Layout>
-        ) : (
-          <Navigate to="/landing" replace />
-        )
-      } />
-    </Routes>
+    <Layout>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/nft-marketplace" element={<NFTMarketplace />} />
+        <Route path="/exchange" element={<Exchange />} />
+        <Route path="/trading" element={<Trading />} />
+        <Route path="/live-auctions" element={<LiveAuctions />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/system-health" element={<SystemHealth />} />
+        <Route path="/automation" element={<AutomationControl />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Layout>
   );
 }
 
