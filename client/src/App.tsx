@@ -41,6 +41,7 @@ function App() {
       <Route path="/live-auctions" element={<LiveAuctions />} />
       <Route path="/portfolio" element={<Portfolio />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/mlm-profile" element={<MLMProfile />} />
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/system-health" element={<SystemHealth />} />
       <Route path="/automation" element={<AutomationControl />} />
