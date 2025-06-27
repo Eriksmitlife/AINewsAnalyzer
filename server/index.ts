@@ -2,6 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { securityHeaders, validateInput, limitRequestSize } from "./middleware/securityMiddleware";
+import { loggingService } from "./services/loggingService";
+import { monitoringService } from "./services/monitoringService";
+import { cacheService } from "./services/cacheService";
 
 const app = express();
 
@@ -45,12 +48,25 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  // Enhanced error handling middleware
+  app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    // Log error with context
+    loggingService.error('Request error', err, {
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      statusCode: status
+    });
+
+    res.status(status).json({ 
+      message,
+      timestamp: new Date().toISOString(),
+      requestId: (req as any).requestId
+    });
   });
 
   // importantly only setup vite in development and after
@@ -71,6 +87,62 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    const startupMessage = `🚀 AutoNews.AI Server Started Successfully`;
+    const details = {
+      port,
+      environment: app.get("env"),
+      nodeVersion: process.version,
+      timestamp: new Date().toISOString(),
+      pid: process.pid,
+      features: [
+        '✅ Advanced Security Middleware',
+        '✅ Multi-level Caching System',
+        '✅ Real-time Performance Monitoring',
+        '✅ Comprehensive Error Tracking',
+        '✅ Rate Limiting & DDoS Protection',
+        '✅ Request/Response Compression',
+        '✅ XSS & SQL Injection Protection',
+        '✅ Automated System Health Checks'
+      ]
+    };
+
+    log(startupMessage);
+    console.log('\n🎯 System Features:');
+    details.features.forEach(feature => console.log(`   ${feature}`));
+    console.log(`\n📊 Access your AutoNews.AI dashboard at: http://localhost:${port}`);
+    console.log(`🔧 Admin metrics available at: http://localhost:${port}/api/admin/metrics`);
+    console.log(`❤️  System health: http://localhost:${port}/api/health\n`);
+
+    loggingService.info('AutoNews.AI server started successfully', details);
+  });
+
+  // Graceful shutdown handling
+  process.on('SIGTERM', () => {
+    loggingService.info('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      loggingService.info('Server closed');
+      cacheService.destroy();
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    loggingService.info('SIGINT received, shutting down gracefully');
+    server.close(() => {
+      loggingService.info('Server closed');
+      cacheService.destroy();
+      process.exit(0);
+    });
+  });
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (error) => {
+    loggingService.critical('Uncaught exception', error);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    loggingService.critical('Unhandled rejection', reason as Error, { promise });
+    process.exit(1);
   });
 })();
