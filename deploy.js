@@ -89,8 +89,8 @@ async function deploy() {
     
     console.log('🚀 Starting AutoNews.AI production server...');
     
-    // Import and start the production server
-    require('./dist/index.js');
+    // Import and start the production server (ES modules)
+    const { default: startServer } = await import('./dist/index.js');
     
   } catch (error) {
     console.error('❌ Deployment failed:', error.message);

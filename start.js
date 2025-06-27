@@ -42,7 +42,7 @@ console.log('Security: Production mode enforced');
 // Start the production server
 try {
   console.log('Starting production server...');
-  require('./dist/index.js');
+  const { default: startServer } = await import('./dist/index.js');
 } catch (error) {
   console.error('STARTUP ERROR:', error.message);
   console.error('Full error:', error);
