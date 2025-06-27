@@ -1,3 +1,4 @@
+
 import { storage } from '../storage';
 import { aiService } from './aiService';
 import type { Article, InsertNft, InsertNftTransaction } from '@shared/schema';
@@ -290,9 +291,8 @@ class NFTService {
   async getUserTransactionHistory(userId: string, limit: number = 100): Promise<any[]> {
     return await storage.getNftTransactions(undefined, userId);
   }
-}
 
-// Advanced rarity calculation based on multiple factors
+  // Advanced rarity calculation based on multiple factors
   calculateAdvancedRarity(article: any, marketData: any): {
     rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
     rarityScore: number;
