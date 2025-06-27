@@ -1826,5 +1826,145 @@ Crawl-delay: 1`;
     }
   });
 
+  // === РЕВОЛЮЦИОННЫЕ СИСТЕМЫ API ===
+
+  // Квантовый ИИ анализ
+  app.get('/api/quantum/analysis/:articleId', async (req, res) => {
+    try {
+      const { quantumAIService } = await import('./services/quantumAIService');
+      const analysis = await quantumAIService.getQuantumAnalysis(req.params.articleId);
+      res.json(analysis);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка квантового анализа' });
+    }
+  });
+
+  app.get('/api/quantum/insights/:articleId', async (req, res) => {
+    try {
+      const { quantumAIService } = await import('./services/quantumAIService');
+      const insights = await quantumAIService.generateMultiPersonalityInsights(req.params.articleId);
+      res.json(insights);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка генерации инсайтов' });
+    }
+  });
+
+  app.get('/api/quantum/stats', async (req, res) => {
+    try {
+      const { quantumAIService } = await import('./services/quantumAIService');
+      const stats = await quantumAIService.getQuantumStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения статистики' });
+    }
+  });
+
+  // Метавселенная API
+  app.get('/api/metaverse/spaces', async (req, res) => {
+    try {
+      const { metaverseService } = await import('./services/metaverseService');
+      const spaces = metaverseService.getAllSpaces();
+      res.json(spaces);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения пространств' });
+    }
+  });
+
+  app.post('/api/metaverse/join/:spaceId', async (req, res) => {
+    try {
+      const { metaverseService } = await import('./services/metaverseService');
+      const userId = req.session.user?.id || 'anonymous';
+      const success = await metaverseService.joinSpace(userId, req.params.spaceId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка присоединения к пространству' });
+    }
+  });
+
+  app.post('/api/metaverse/chat/:companionId', async (req, res) => {
+    try {
+      const { metaverseService } = await import('./services/metaverseService');
+      const userId = req.session.user?.id || 'anonymous';
+      const { message } = req.body;
+      const response = await metaverseService.chatWithAICompanion(req.params.companionId, userId, message);
+      res.json({ response });
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка общения с ИИ' });
+    }
+  });
+
+  app.get('/api/metaverse/tour', async (req, res) => {
+    try {
+      const { metaverseService } = await import('./services/metaverseService');
+      const userId = req.session.user?.id || 'anonymous';
+      const tour = await metaverseService.generateVirtualTour(userId);
+      res.json(tour);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка генерации тура' });
+    }
+  });
+
+  app.get('/api/metaverse/stats', async (req, res) => {
+    try {
+      const { metaverseService } = await import('./services/metaverseService');
+      const stats = await metaverseService.getMetaverseStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения статистики метавселенной' });
+    }
+  });
+
+  // Глобальная экономика API
+  app.get('/api/economy/stats', async (req, res) => {
+    try {
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      const stats = await globalEconomyService.getGlobalEconomyStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения экономической статистики' });
+    }
+  });
+
+  app.get('/api/economy/report', async (req, res) => {
+    try {
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      const report = await globalEconomyService.generateComprehensiveReport();
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка генерации отчета' });
+    }
+  });
+
+  app.get('/api/economy/opportunities', async (req, res) => {
+    try {
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      const limit = parseInt(req.query.limit as string) || 10;
+      const opportunities = globalEconomyService.getTopMarketOpportunities(limit);
+      res.json(opportunities);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения возможностей' });
+    }
+  });
+
+  app.get('/api/economy/impact/:newsId', async (req, res) => {
+    try {
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      const impact = globalEconomyService.getEconomicImpactForNews(req.params.newsId);
+      res.json(impact);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка получения экономического воздействия' });
+    }
+  });
+
+  app.get('/api/economy/our-impact', async (req, res) => {
+    try {
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      const impact = await globalEconomyService.analyzeOwnEconomicImpact();
+      res.json(impact);
+    } catch (error) {
+      res.status(500).json({ error: 'Ошибка анализа собственного влияния' });
+    }
+  });
+
   return server;
 }

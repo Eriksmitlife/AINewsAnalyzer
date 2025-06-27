@@ -18,6 +18,7 @@ import Profile from "@/pages/Profile";
 import Analytics from "@/pages/Analytics";
 import SystemHealth from "@/pages/SystemHealth";
 import AutomationControl from "@/pages/AutomationControl";
+import QuantumAI from "@/pages/QuantumAI";
 import Cryptocurrency from "@/pages/Cryptocurrency";
 import NotFound from "@/pages/not-found";
 
@@ -42,6 +43,7 @@ function App() {
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/system-health" element={<SystemHealth />} />
       <Route path="/automation" element={<AutomationControl />} />
+      <Route path="/quantum" element={<QuantumAI />} />
       <Route path="/cryptocurrency" element={<Cryptocurrency />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<NotFound />} />

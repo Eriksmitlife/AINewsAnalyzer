@@ -145,24 +145,40 @@ app.use((req, res, next) => {
     console.error('Unhandled rejection:', reason);
   });
 
-  // Запуск автономных систем самомасштабирования и продвижения
+  // Запуск всех революционных систем AutoNews.AI
   setTimeout(async () => {
     try {
-      console.log('🚀 Инициализация автономных систем AutoNews.AI...');
+      console.log('🚀 Инициализация полной экосистемы AutoNews.AI...');
       
-      // Запуск системы автопродвижения
+      // 1. Система автопродвижения
       const { autoPromotionService } = await import('./services/autoPromotionService');
       await autoPromotionService.startAutoPromotion();
       console.log('✅ Система автопродвижения активирована');
       
-      // Запуск системы самоэволюции
+      // 2. Система самоэволюции
       const { selfEvolvingService } = await import('./services/selfEvolvingService');
       await selfEvolvingService.startEvolution();
       console.log('✅ Система самоэволюции активирована');
       
-      console.log('🧬 Все автономные системы успешно запущены');
+      // 3. Квантовый ИИ анализ
+      const { quantumAIService } = await import('./services/quantumAIService');
+      await quantumAIService.startQuantumAnalysis();
+      console.log('✅ Квантовый ИИ анализ запущен');
+      
+      // 4. Метавселенная
+      const { metaverseService } = await import('./services/metaverseService');
+      await metaverseService.startMetaverse();
+      console.log('✅ Метавселенная инициализирована');
+      
+      // 5. Глобальная экономическая аналитика
+      const { globalEconomyService } = await import('./services/globalEconomyService');
+      await globalEconomyService.startGlobalAnalysis();
+      console.log('✅ Глобальная экономическая аналитика активна');
+      
+      console.log('🌟 ВСЯ ЭКОСИСТЕМА AutoNews.AI ПОЛНОСТЬЮ ЗАПУЩЕНА!');
+      console.log('🚀 Платформа работает на полную мощность со всеми революционными возможностями');
     } catch (error) {
-      console.error('❌ Ошибка запуска автономных систем:', error);
+      console.error('❌ Ошибка запуска систем:', error);
     }
-  }, 5000); // Запуск через 5 секунд после старта сервера
+  }, 5000);
 })();
