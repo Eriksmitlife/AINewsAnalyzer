@@ -118,53 +118,61 @@ export default function Exchange() {
 
         {/* Market Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
+          <div className="card-modern hover-lift">
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Объем 24ч</p>
-                  <p className="text-2xl font-bold">${exchangeData?.marketStats.totalVolume24h.toLocaleString()}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Объем 24ч</p>
+                  <p className="text-3xl font-bold gradient-text">${exchangeData?.marketStats.totalVolume24h.toLocaleString()}</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-500" />
+                <div className="p-3 bg-green-500/20 rounded-xl">
+                  <DollarSign className="h-8 w-8 text-green-500" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
+          <div className="card-modern hover-lift">
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Активные лоты</p>
-                  <p className="text-2xl font-bold">{exchangeData?.marketStats.totalListings.toLocaleString()}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Активные лоты</p>
+                  <p className="text-3xl font-bold gradient-text">{exchangeData?.marketStats.totalListings.toLocaleString()}</p>
                 </div>
-                <Activity className="h-8 w-8 text-blue-500" />
+                <div className="p-3 bg-blue-500/20 rounded-xl">
+                  <Activity className="h-8 w-8 text-blue-500" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
+          <div className="card-modern hover-lift">
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Активные трейдеры</p>
-                  <p className="text-2xl font-bold">{exchangeData?.marketStats.activeTraders}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Активные трейдеры</p>
+                  <p className="text-3xl font-bold gradient-text">{exchangeData?.marketStats.activeTraders}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-purple-500" />
+                <div className="p-3 bg-purple-500/20 rounded-xl">
+                  <TrendingUp className="h-8 w-8 text-purple-500" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card>
-            <CardContent className="p-6">
+          <div className="card-modern hover-lift">
+            <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Средняя цена</p>
-                  <p className="text-2xl font-bold">${exchangeData?.marketStats.avgPrice.toFixed(2)}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Средняя цена</p>
+                  <p className="text-3xl font-bold gradient-text">${exchangeData?.marketStats.avgPrice.toFixed(2)}</p>
                 </div>
-                <Star className="h-8 w-8 text-yellow-500" />
+                <div className="p-3 bg-yellow-500/20 rounded-xl">
+                  <Star className="h-8 w-8 text-yellow-500" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

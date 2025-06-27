@@ -1,3 +1,6 @@
+/* Import modern UI styles first */
+@import './styles-modern.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

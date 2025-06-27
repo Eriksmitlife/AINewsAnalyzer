@@ -146,8 +146,8 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
 
   if (compact) {
     return (
-      <article className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-        <div className="flex items-start space-x-4">
+      <article className="glass-card hover-lift p-4 rounded-lg transition-all">
+        <div className="flex items-start gap-4">
           {article.imageUrl && (
             <img 
               src={article.imageUrl} 
@@ -229,60 +229,66 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
   const summary = article.summary || cleanContent.substring(0, 200) + '...';
 
   return (
-    <Card className="news-card">
-      <CardContent className="p-6">
-        {article.imageUrl && (
-          <div className="mb-4">
-            <img 
-              src={article.imageUrl} 
-              alt={article.title}
-              className="w-full h-48 object-cover rounded-lg"
-            />
+    <div className="card-modern hover-lift">
+      {article.imageUrl && (
+        <div className="relative overflow-hidden rounded-t-lg">
+          <img 
+            src={article.imageUrl} 
+            alt={article.title}
+            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+          />
+          <div className="absolute top-2 left-2">
+            <Badge className={`${getCategoryColor(article.category)} backdrop-blur-sm`}>
+              {article.category}
+            </Badge>
+          </div>
+        </div>
+      )}
+
+      <div className="p-6 space-y-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          {!article.imageUrl && (
+            <Badge className={`${getCategoryColor(article.category)}`}>
+              {article.category}
+            </Badge>
+          )}
+          {article.isVerified && (
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Verified
+            </Badge>
+          )}
+          {Number(article.trendingScore) > 0.7 && (
+            <Badge className="badge-trending">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Trending
+            </Badge>
+          )}
+        </div>
+
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
+          {article.title}
+        </h3>
+
+        <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
+          {summary}
+        </p>
+
+        {ads.length > 0 && (
+          <div className="border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-r-lg">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="w-4 h-4 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Спонсорский контент</span>
+            </div>
+            {ads.map((ad, index) => (
+              <p key={index} className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
+                {ad}
+              </p>
+            ))}
           </div>
         )}
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={`badge-category ${getCategoryColor(article.category)}`}>
-              {article.category}
-            </Badge>
-            {article.isVerified && (
-              <Badge className="badge-verified">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Verified
-              </Badge>
-            )}
-            {Number(article.trendingScore) > 0.7 && (
-              <Badge className="badge-trending">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                Trending
-              </Badge>
-            )}
-          </div>
-
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
-            {article.title}
-          </h3>
-
-          <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
-            {summary}
-          </p>
-
-          {ads.length > 0 && (
-            <div className="border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-r-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Zap className="w-4 h-4 text-yellow-600" />
-                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Спонсорский контент</span>
-              </div>
-              {ads.map((ad, index) => (
-                <p key={index} className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
-                  {ad}
-                </p>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-4">
               <span>{article.author || 'Unknown'}</span>
               <span className="flex items-center gap-1">
@@ -294,37 +300,37 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
                 {article.viewCount || 0}
               </span>
             </div>
+        </div>
+
+        {(article.aiScore || article.sentimentScore || article.factCheckScore) && (
+          <div className="flex items-center gap-4 text-xs">
+            {article.aiScore && (
+              <div className="flex items-center gap-1">
+                <Brain className="w-3 h-3 text-purple-500" />
+                <span>AI: {Math.round(Number(article.aiScore) * 100)}%</span>
+              </div>
+            )}
+            {article.sentimentScore && (
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${
+                  article.sentiment === 'positive' ? 'bg-green-500' : 
+                  article.sentiment === 'negative' ? 'bg-red-500' : 'bg-gray-500'
+                }`}></div>
+                <span>Sentiment: {Math.round(Number(article.sentimentScore) * 100)}%</span>
+              </div>
+            )}
+            {article.factCheckScore && (
+              <div className="flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-blue-500" />
+                <span>Fact: {Math.round(Number(article.factCheckScore) * 100)}%</span>
+              </div>
+            )}
           </div>
+        )}
 
-          {(article.aiScore || article.sentimentScore || article.factCheckScore) && (
-            <div className="flex items-center gap-4 text-xs">
-              {article.aiScore && (
-                <div className="flex items-center gap-1">
-                  <Brain className="w-3 h-3 text-purple-500" />
-                  <span>AI: {Math.round(Number(article.aiScore) * 100)}%</span>
-                </div>
-              )}
-              {article.sentimentScore && (
-                <div className="flex items-center gap-1">
-                  <div className={`w-2 h-2 rounded-full ${
-                    article.sentiment === 'positive' ? 'bg-green-500' : 
-                    article.sentiment === 'negative' ? 'bg-red-500' : 'bg-gray-500'
-                  }`}></div>
-                  <span>Sentiment: {Math.round(Number(article.sentimentScore) * 100)}%</span>
-                </div>
-              )}
-              {article.factCheckScore && (
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-blue-500" />
-                  <span>Fact: {Math.round(Number(article.factCheckScore) * 100)}%</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center space-x-2">
-              <Button
+        <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center space-x-2">
+            <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => favoriteMutation.mutate()}
@@ -378,20 +384,19 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
                   )}
                 </Button>
               )}
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(article.url, '_blank')}
-              className="hover:text-blue-600"
-            >
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Read More
-            </Button>
           </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.open(article.url, '_blank')}
+            className="hover:text-blue-600"
+          >
+            <ExternalLink className="w-4 h-4 mr-1" />
+            Read More
+          </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

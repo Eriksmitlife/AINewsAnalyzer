@@ -157,49 +157,49 @@ export default function NFTCard({ nft, compact = false, showOwnerActions = false
   }
 
   return (
-    <Card className="nft-card">
-      <CardContent className="p-0">
-        <div className="relative">
-          <img 
-            src={nft.imageUrl || "/placeholder-nft.png"} 
-            alt={nft.name}
-            className="w-full h-48 object-cover"
-          />
-          <div className="absolute top-2 left-2">
-            <Badge className={`badge-category ${getChainBadgeColor(nft.chain)}`}>
-              {nft.chain?.toUpperCase()}
+    <div className="card-modern hover-lift">
+      <div className="relative overflow-hidden rounded-t-lg">
+        <img 
+          src={nft.imageUrl || "/placeholder-nft.png"} 
+          alt={nft.name}
+          className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-2 left-2">
+          <Badge className={`${getChainBadgeColor(nft.chain)} backdrop-blur-sm`}>
+            {nft.chain?.toUpperCase()}
+          </Badge>
+        </div>
+        {nft.isForSale && (
+          <div className="absolute top-2 right-2">
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 backdrop-blur-sm">
+              Для продажи
             </Badge>
           </div>
-          {nft.isForSale && (
-            <div className="absolute top-2 right-2">
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                For Sale
-              </Badge>
-            </div>
-          )}
+        )}
+      </div>
+
+      <div className="p-5 space-y-4">
+        <div>
+          <h3 className="font-semibold text-lg text-gray-900 dark:text-white line-clamp-1">
+            {nft.name}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">
+            {nft.description}
+          </p>
         </div>
 
-        <div className="p-4 space-y-3">
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">
-              {nft.name}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-              {nft.description}
-            </p>
+        {nft.metadata?.attributes && (
+          <div className="flex flex-wrap gap-2">
+            {nft.metadata.attributes.slice(0, 3).map((attr: any, index: number) => (
+              <Badge key={index} className="badge-modern text-xs">
+                {attr.trait_type}: {attr.value}
+              </Badge>
+            ))}
           </div>
+        )}
 
-          {nft.metadata?.attributes && (
-            <div className="flex flex-wrap gap-1">
-              {nft.metadata.attributes.slice(0, 3).map((attr: any, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {attr.trait_type}: {attr.value}
-                </Badge>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Price</p>
               {isEditing ? (
@@ -308,8 +308,7 @@ export default function NFTCard({ nft, compact = false, showOwnerActions = false
               </DialogContent>
             </Dialog>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

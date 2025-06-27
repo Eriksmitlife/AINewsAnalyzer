@@ -52,21 +52,34 @@ export default function Header() {
     themeService.setTheme(themeId);
   };
 
-  const navigationItems = [
-    { href: '/', label: 'Home', icon: Home },
-    { href: '/news', label: 'News', icon: Newspaper },
-    { href: '/marketplace', label: 'NFT Market', icon: ShoppingCart },
-    { href: '/exchange', label: 'Exchange', icon: TrendingUp },
-    { href: '/trading', label: 'Trading', icon: BarChart3 },
-    { href: '/auctions', label: 'Auctions', icon: Gavel },
-    { href: '/portfolio', label: 'Portfolio', icon: Briefcase },
-    { href: '/cryptocurrency', label: 'ANC Coin', icon: Bitcoin },
-    { href: '/quantum-ai', label: 'Quantum AI', icon: Brain },
-    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/system-health', label: 'System', icon: HeartPulse },
-    { href: '/automation', label: 'Automation', icon: Cpu },
-    { href: '/mlm-profile', label: 'MLM Profile', icon: Trophy },
-    { href: '/profile', label: 'Profile', icon: UserCircle },
+  const navigationGroups = {
+    main: [
+      { href: '/', label: 'Главная', icon: Home },
+      { href: '/news', label: 'Новости', icon: Newspaper },
+      { href: '/marketplace', label: 'NFT Маркет', icon: ShoppingCart },
+    ],
+    trading: [
+      { href: '/exchange', label: 'Биржа', icon: TrendingUp },
+      { href: '/trading', label: 'Торговля', icon: BarChart3 },
+      { href: '/auctions', label: 'Аукционы', icon: Gavel },
+    ],
+    personal: [
+      { href: '/portfolio', label: 'Портфель', icon: Briefcase },
+      { href: '/mlm-profile', label: 'MLM Профиль', icon: Trophy },
+      { href: '/profile', label: 'Профиль', icon: UserCircle },
+    ],
+    advanced: [
+      { href: '/cryptocurrency', label: 'ANC Coin', icon: Bitcoin },
+      { href: '/quantum-ai', label: 'Квантовый ИИ', icon: Brain },
+      { href: '/analytics', label: 'Аналитика', icon: BarChart3 },
+    ],
+  };
+
+  const allNavigationItems = [
+    ...navigationGroups.main,
+    ...navigationGroups.trading,
+    ...navigationGroups.personal,
+    ...navigationGroups.advanced,
   ];
 
   const currentLanguage = SUPPORTED_LANGUAGES.find(lang => lang.code === currentLang);
@@ -103,8 +116,9 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center space-x-1">
-            {navigationItems.slice(0, 8).map((item) => {
+          <nav className="hidden lg:flex items-center space-x-1">
+            {/* Main Navigation */}
+            {navigationGroups.main.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.href;
               return (
@@ -112,32 +126,82 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-9 px-3 hover:bg-cyan-500/10 hover:text-cyan-400 transition-colors ${
-                      isActive ? 'bg-cyan-500/20 text-cyan-400' : ''
+                    className={`h-9 px-3 hover:bg-cyan-500/10 hover:text-cyan-400 transition-all ${
+                      isActive ? 'bg-cyan-500/20 text-cyan-400 shadow-lg shadow-cyan-500/20' : ''
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-1.5" />
-                    <span className="text-sm">{item.label}</span>
+                    <span className="text-sm font-medium">{item.label}</span>
                   </Button>
                 </Link>
               );
             })}
             
-            {/* More dropdown for additional items */}
+            <div className="w-px h-6 bg-gray-700 mx-1" />
+            
+            {/* Trading Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 px-3">
-                  <Menu className="w-4 h-4 mr-1.5" />
-                  <span className="text-sm">More</span>
+                <Button variant="ghost" size="sm" className="h-9 px-3 hover:bg-cyan-500/10 hover:text-cyan-400">
+                  <TrendingUp className="w-4 h-4 mr-1.5" />
+                  <span className="text-sm font-medium">Торговля</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {navigationItems.slice(8).map((item) => {
+              <DropdownMenuContent align="center" className="w-48">
+                {navigationGroups.trading.map((item) => {
                   const Icon = item.icon;
                   const isActive = location === item.href;
                   return (
                     <DropdownMenuItem key={item.href} asChild>
-                      <Link href={item.href} className={isActive ? 'bg-cyan-500/20' : ''}>
+                      <Link href={item.href} className={`flex items-center ${isActive ? 'bg-cyan-500/20' : ''}`}>
+                        <Icon className="w-4 h-4 mr-2" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Personal Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 px-3 hover:bg-cyan-500/10 hover:text-cyan-400">
+                  <User className="w-4 h-4 mr-1.5" />
+                  <span className="text-sm font-medium">Личное</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-48">
+                {navigationGroups.personal.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.href;
+                  return (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={item.href} className={`flex items-center ${isActive ? 'bg-cyan-500/20' : ''}`}>
+                        <Icon className="w-4 h-4 mr-2" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* Advanced Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 px-3 hover:bg-cyan-500/10 hover:text-cyan-400">
+                  <Zap className="w-4 h-4 mr-1.5" />
+                  <span className="text-sm font-medium">Продвинутое</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-48">
+                {navigationGroups.advanced.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.href;
+                  return (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={item.href} className={`flex items-center ${isActive ? 'bg-cyan-500/20' : ''}`}>
                         <Icon className="w-4 h-4 mr-2" />
                         <span>{item.label}</span>
                       </Link>
@@ -299,7 +363,7 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="xl:hidden border-t border-cyan-500/30 py-4">
             <nav className="flex flex-col space-y-1">
-              {navigationItems.map((item) => {
+              {allNavigationItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location === item.href;
                 return (
