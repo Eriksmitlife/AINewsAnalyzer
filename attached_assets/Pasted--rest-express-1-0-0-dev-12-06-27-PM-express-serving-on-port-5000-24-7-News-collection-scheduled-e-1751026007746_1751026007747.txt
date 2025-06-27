@@ -1,0 +1,97 @@
+> rest-express@1.0.0 dev
+12:06:27 PM [express] serving on port 5000
+24/7 News collection scheduled every 5 minutes
+24/7 News collection system initialized successfully
+Error:   Failed to scan for dependencies from entries:
+  /home/runner/workspace/client/index.html
+
+  ✘ [ERROR] Missing "./providers/alchemy" specifier in "wagmi" package [plugin vite:dep-scan]
+
+    node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:24:
+      46042 │ function e(e,n,r){throw new Error(r?`No known conditions for "$...
+            ╵                         ^
+
+    at e (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:25)
+    at n (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:627)
+    at o (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:1297)
+    at resolveExportsOrImports (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46663:18)
+    at resolveDeepImport (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46686:25)
+    at tryNodeResolve (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46451:16)
+    at ResolveIdContext.resolveId (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46201:19)
+    at PluginContainer.resolveId (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49018:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async resolve (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49630:22)
+
+  This error came from the "onResolve" callback registered here:
+
+    node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49789:12:
+      49789 │       build.onResolve(
+            ╵             ~~~~~~~~~
+
+    at setup (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49789:13)
+    at handlePlugins (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1150:21)
+    at buildOrContextImpl (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:873:5)
+    at Object.buildOrContext (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:699:5)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:2032:68
+    at new Promise (<anonymous>)
+    at Object.context (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:2032:27)
+    at Object.context (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1874:58)
+    at prepareEsbuildScanner (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49576:24)
+
+  The plugin "vite:dep-scan" was triggered by this import
+
+    client/src/lib/web3Config.ts:10:32:
+      10 │ import { alchemyProvider } from 'wagmi/providers/alchemy';
+         ╵                                 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+✘ [ERROR] Missing "./providers/public" specifier in "wagmi" package [plugin vite:dep-scan]
+
+    node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:24:
+      46042 │ function e(e,n,r){throw new Error(r?`No known conditions for "$...
+            ╵                         ^
+
+    at e (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:25)
+    at n (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:627)
+    at o (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46042:1297)
+    at resolveExportsOrImports (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46663:18)
+    at resolveDeepImport (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46686:25)
+    at tryNodeResolve (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46451:16)
+    at ResolveIdContext.resolveId (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:46201:19)
+    at PluginContainer.resolveId (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49018:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async resolve (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49630:22)
+
+  This error came from the "onResolve" callback registered here:
+
+    node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49789:12:
+      49789 │       build.onResolve(
+            ╵             ~~~~~~~~~
+
+    at setup (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49789:13)
+    at handlePlugins (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1150:21)
+    at buildOrContextImpl (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:873:5)
+    at Object.buildOrContext (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:699:5)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:2032:68
+    at new Promise (<anonymous>)
+    at Object.context (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:2032:27)
+    at Object.context (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1874:58)
+    at prepareEsbuildScanner (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49576:24)
+
+  The plugin "vite:dep-scan" was triggered by this import
+
+    client/src/lib/web3Config.ts:9:31:
+      9 │ import { publicProvider } from 'wagmi/providers/public';
+        ╵                                ~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    at failureErrorWithLog (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:945:25
+    at runOnEndCallbacks (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:1315:45)
+    at buildResponseToResult (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:943:7)
+    at /home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:955:9
+    at new Promise (<anonymous>)
+    at requestCallbacks.on-end (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:954:54)
+    at handleRequest (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:647:17)
+    at handleIncomingPacket (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:672:7)
+    at Socket.readFromStdout (/home/runner/workspace/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
