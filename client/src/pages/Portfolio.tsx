@@ -68,6 +68,36 @@ interface PortfolioData {
   };
 }
 
+// Placeholder components for Web3 integration
+function WalletConnect() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Подключить кошелек</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>Подключите свой Web3 кошелек для управления криптовалютой.</p>
+        <Button>Подключить</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CryptoTransactions() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Крипто транзакции</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p>Здесь вы можете выполнять транзакции с криптовалютой.</p>
+        <Button>Отправить</Button>
+        <Button>Получить</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Portfolio() {
   const [selectedNft, setSelectedNft] = useState("");
   const [listingPrice, setListingPrice] = useState("");
@@ -299,10 +329,11 @@ export default function Portfolio() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="holdings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="holdings">Активы</TabsTrigger>
             <TabsTrigger value="transactions">Транзакции</TabsTrigger>
             <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+            <TabsTrigger value="wallet">Кошелек</TabsTrigger>
           </TabsList>
 
           <TabsContent value="holdings">
@@ -492,6 +523,14 @@ export default function Portfolio() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </TabsContent>
+
+          {/* Wallet Tab */}
+          <TabsContent value="wallet" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WalletConnect />
+              <CryptoTransactions />
             </div>
           </TabsContent>
         </Tabs>

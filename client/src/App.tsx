@@ -3,6 +3,9 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { WagmiProvider } from 'wagmi';
+import { createWeb3Modal } from '@web3modal/wagmi/react';
+import { config } from './lib/web3Config';
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
@@ -16,6 +19,13 @@ import LiveAuctions from "@/pages/LiveAuctions";
 import Portfolio from "@/pages/Portfolio";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
+
+// Создание Web3Modal
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId: process.env.VITE_WALLETCONNECT_PROJECT_ID || 'your-project-id',
+  enableAnalytics: true,
+});
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -52,12 +62,14 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 
