@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, type ReactNode }
 interface Theme {
   id: string;
   name: string;
+  description: string;
   colors: {
     primary: string;
     secondary: string;
@@ -17,6 +18,7 @@ export const THEMES: Theme[] = [
   {
     id: 'light',
     name: 'Light',
+    description: 'Clean and bright interface',
     colors: {
       primary: '#3b82f6',
       secondary: '#64748b',
@@ -28,6 +30,7 @@ export const THEMES: Theme[] = [
   {
     id: 'dark',
     name: 'Dark',
+    description: 'Easy on the eyes',
     colors: {
       primary: '#60a5fa',
       secondary: '#94a3b8',
@@ -39,12 +42,25 @@ export const THEMES: Theme[] = [
   {
     id: 'blue',
     name: 'Ocean Blue',
+    description: 'Professional blue theme',
     colors: {
       primary: '#0ea5e9',
       secondary: '#0284c7',
       background: '#f0f9ff',
       text: '#0c4a6e',
       accent: '#06b6d4'
+    }
+  },
+  {
+    id: 'neon',
+    name: 'Neon',
+    description: 'Vibrant cyberpunk style',
+    colors: {
+      primary: '#00ff88',
+      secondary: '#ff0080',
+      background: '#0a0a0a',
+      text: '#ffffff',
+      accent: '#ffff00'
     }
   }
 ];

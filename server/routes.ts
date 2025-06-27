@@ -13,6 +13,7 @@ import { loggingService } from "./services/loggingService";
 import { realtimeService } from "./services/realtimeService";
 import { gamificationService } from "./services/gamificationService";
 import { recommendationService } from "./services/recommendationService";
+import { autoNewsCoin } from "./services/cryptocurrencyService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateOGImageUrl } from "./services/ogImageService";
@@ -1199,6 +1200,245 @@ Crawl-delay: 1`;
   // Real-time updates endpoint
   app.get("/api/realtime/stats", (req, res) => {
     res.json(realtimeService.getStats());
+  });
+
+  // ==================== AUTONEWS COIN (ANC) CRYPTOCURRENCY API ====================
+  
+  // Получение статистики блокчейна ANC
+  app.get("/api/anc/blockchain/stats", async (req, res) => {
+    try {
+      const stats = autoNewsCoin.getBlockchainStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get blockchain stats' });
+    }
+  });
+
+  // Создание нового кошелька ANC
+  app.post("/api/anc/wallet/create", isAuthenticated, async (req: any, res) => {
+    try {
+      const wallet = autoNewsCoin.createWallet();
+      
+      // Сохранение информации о кошельке (без приватного ключа)
+      await storage.recordSystemMetric({
+        metricName: 'anc_wallet_created',
+        value: '1',
+        metadata: {
+          userId: req.user.claims.sub,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          initialBalance: wallet.balance
+        },
+        timestamp: new Date()
+      });
+
+      // Возвращаем кошелек без приватного ключа для безопасности
+      res.json({
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        balance: wallet.balance,
+        stakingBalance: wallet.stakingBalance,
+        message: 'Wallet created successfully. Save your private key securely!'
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create wallet' });
+    }
+  });
+
+  // Получение баланса кошелька ANC
+  app.get("/api/anc/wallet/:address/balance", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const balance = autoNewsCoin.getWalletBalance(address);
+      res.json({ address, ...balance });
+    } catch (error) {
+      res.status(404).json({ error: 'Wallet not found' });
+    }
+  });
+
+  // Перевод токенов ANC
+  app.post("/api/anc/transfer", isAuthenticated, async (req: any, res) => {
+    try {
+      const { to, amount, privateKey } = req.body;
+      
+      if (!to || !amount || !privateKey) {
+        return res.status(400).json({ error: 'Missing required fields: to, amount, privateKey' });
+      }
+
+      const from = req.user.walletAddress || 'anc_default_address';
+      const transactionId = await autoNewsCoin.transferTokens(from, to, amount, privateKey);
+      
+      res.json({
+        success: true,
+        transactionId,
+        from,
+        to,
+        amount,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Стейкинг токенов ANC
+  app.post("/api/anc/stake", isAuthenticated, async (req: any, res) => {
+    try {
+      const { amount } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Invalid amount for staking' });
+      }
+
+      const address = req.user.walletAddress || 'anc_default_address';
+      await autoNewsCoin.stakeTokens(address, amount);
+      
+      res.json({
+        success: true,
+        message: 'Tokens staked successfully',
+        amount,
+        apy: 12,
+        estimatedDailyReward: (amount * 0.12) / 365,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Кросс-чейн мост ANC
+  app.post("/api/anc/bridge", isAuthenticated, async (req: any, res) => {
+    try {
+      const { toChain, amount, destinationAddress } = req.body;
+      
+      if (!toChain || !amount || !destinationAddress) {
+        return res.status(400).json({ error: 'Missing required fields: toChain, amount, destinationAddress' });
+      }
+
+      const userAddress = req.user.walletAddress || 'anc_default_address';
+      const bridgeId = await autoNewsCoin.bridgeToChain('anc', toChain, amount, userAddress);
+      
+      res.json({
+        success: true,
+        bridgeId,
+        fromChain: 'anc',
+        toChain,
+        amount,
+        destinationAddress,
+        estimatedTime: '5-10 minutes',
+        fee: amount * 0.001,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // История транзакций ANC
+  app.get("/api/anc/transactions/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const { limit = 50, offset = 0 } = req.query;
+      
+      const transactions = await autoNewsCoin.getTransactionHistory(
+        address, 
+        parseInt(limit as string), 
+        parseInt(offset as string)
+      );
+      
+      res.json({
+        address,
+        transactions,
+        total: transactions.length,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string)
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get transaction history' });
+    }
+  });
+
+  // Информация о блоке ANC
+  app.get("/api/anc/block/:blockNumber", async (req, res) => {
+    try {
+      const { blockNumber } = req.params;
+      const block = await autoNewsCoin.getBlock(parseInt(blockNumber));
+      
+      if (!block) {
+        return res.status(404).json({ error: 'Block not found' });
+      }
+      
+      res.json(block);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get block information' });
+    }
+  });
+
+  // Статистика майнинга ANC
+  app.get("/api/anc/mining/stats", async (req, res) => {
+    try {
+      const stats = {
+        networkHashrate: '1.2 PH/s',
+        difficulty: autoNewsCoin.getCurrentDifficulty(),
+        blockReward: 50,
+        avgBlockTime: 12,
+        pendingTransactions: autoNewsCoin.getPendingTransactionsCount(),
+        lastBlock: autoNewsCoin.getLatestBlockInfo(),
+        energyEfficiency: '99.9% более эффективно чем Bitcoin'
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get mining stats' });
+    }
+  });
+
+  // Активные валидаторы ANC
+  app.get("/api/anc/validators", async (req, res) => {
+    try {
+      const validators = await autoNewsCoin.getActiveValidators();
+      res.json(validators);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get validators' });
+    }
+  });
+
+  // Цена ANC в реальном времени
+  app.get("/api/anc/price", async (req, res) => {
+    try {
+      const price = await autoNewsCoin.getCurrentPrice();
+      res.json({
+        symbol: 'ANC',
+        name: 'AutoNews Coin',
+        ...price,
+        last_updated: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get price data' });
+    }
+  });
+
+  // Конвертация валют ANC
+  app.post("/api/anc/convert", async (req, res) => {
+    try {
+      const { from, to, amount } = req.body;
+      
+      if (!from || !to || !amount) {
+        return res.status(400).json({ error: 'Missing required fields: from, to, amount' });
+      }
+
+      const conversion = await autoNewsCoin.convertCurrency(from, to, amount);
+      
+      res.json({
+        from,
+        to,
+        amount,
+        ...conversion,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to convert currency' });
+    }
   });
 
   // AI Enhancement API

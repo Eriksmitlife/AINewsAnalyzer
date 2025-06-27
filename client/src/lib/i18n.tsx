@@ -8,6 +8,7 @@ interface Translations {
 interface LanguageConfig {
   code: string;
   name: string;
+  flag: string;
   translations: Translations;
 }
 
@@ -15,13 +16,23 @@ const LANGUAGES: LanguageConfig[] = [
   {
     code: 'en',
     name: 'English',
+    flag: '🇺🇸',
     translations: {
       'nav.dashboard': 'Dashboard',
       'nav.news': 'News',
       'nav.nft': 'NFT Marketplace',
+      'nav.exchange': 'Exchange',
       'nav.trading': 'Trading',
+      'nav.auctions': 'Live Auctions',
       'nav.portfolio': 'Portfolio',
       'nav.analytics': 'Analytics',
+      'nav.systemHealth': 'System Health',
+      'nav.profile': 'Profile',
+      'themes.light': 'Light',
+      'themes.dark': 'Dark',
+      'themes.blue': 'Ocean Blue',
+      'themes.neon': 'Neon',
+      'selectLanguage': 'Select Language',
       'common.loading': 'Loading...',
       'common.error': 'Error',
       'common.save': 'Save',
@@ -31,20 +42,58 @@ const LANGUAGES: LanguageConfig[] = [
   {
     code: 'ru',
     name: 'Русский',
+    flag: '🇷🇺',
     translations: {
       'nav.dashboard': 'Панель управления',
       'nav.news': 'Новости',
       'nav.nft': 'NFT Маркетплейс',
+      'nav.exchange': 'Биржа',
       'nav.trading': 'Торговля',
+      'nav.auctions': 'Аукционы',
       'nav.portfolio': 'Портфолио',
       'nav.analytics': 'Аналитика',
+      'nav.systemHealth': 'Состояние системы',
+      'nav.profile': 'Профиль',
+      'themes.light': 'Светлая',
+      'themes.dark': 'Темная',
+      'themes.blue': 'Океан',
+      'themes.neon': 'Неон',
+      'selectLanguage': 'Выбрать язык',
       'common.loading': 'Загрузка...',
       'common.error': 'Ошибка',
       'common.save': 'Сохранить',
       'common.cancel': 'Отмена'
     }
+  },
+  {
+    code: 'zh',
+    name: '中文',
+    flag: '🇨🇳',
+    translations: {
+      'nav.dashboard': '仪表板',
+      'nav.news': '新闻',
+      'nav.nft': 'NFT市场',
+      'nav.exchange': '交易所',
+      'nav.trading': '交易',
+      'nav.auctions': '实时拍卖',
+      'nav.portfolio': '投资组合',
+      'nav.analytics': '分析',
+      'nav.systemHealth': '系统状态',
+      'nav.profile': '个人资料',
+      'themes.light': '浅色',
+      'themes.dark': '深色',
+      'themes.blue': '海洋蓝',
+      'themes.neon': '霓虹',
+      'selectLanguage': '选择语言',
+      'common.loading': '加载中...',
+      'common.error': '错误',
+      'common.save': '保存',
+      'common.cancel': '取消'
+    }
   }
 ];
+
+export const SUPPORTED_LANGUAGES = LANGUAGES;
 
 class I18nService {
   private currentLanguage: string = 'en';

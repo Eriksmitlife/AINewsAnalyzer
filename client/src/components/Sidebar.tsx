@@ -32,6 +32,7 @@ const navigation = [
   { name: "Trading", href: "/trading", icon: LineChart, key: "nav.trading" },
   { name: "Live Auctions", href: "/auctions", icon: Gavel, key: "nav.auctions" },
   { name: "Portfolio", href: "/portfolio", icon: Briefcase, key: "nav.portfolio" },
+  { name: "AutoNews Coin", href: "/cryptocurrency", icon: Zap, key: "nav.cryptocurrency" },
   { name: "Analytics", href: "/analytics", icon: BarChart3, key: "nav.analytics" },
   { name: "System Health", href: "/system-health", icon: Activity, key: "nav.systemHealth" },
   { name: "Profile", href: "/profile", icon: User, key: "nav.profile" },

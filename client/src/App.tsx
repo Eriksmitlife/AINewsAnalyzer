@@ -18,6 +18,7 @@ import Profile from "@/pages/Profile";
 import Analytics from "@/pages/Analytics";
 import SystemHealth from "@/pages/SystemHealth";
 import AutomationControl from "@/pages/AutomationControl";
+import Cryptocurrency from "@/pages/Cryptocurrency";
 import NotFound from "@/pages/not-found";
 
 import { queryClient } from "@/lib/queryClient";
@@ -41,6 +42,7 @@ function App() {
       <Route path="/analytics" element={<Analytics />} />
       <Route path="/system-health" element={<SystemHealth />} />
       <Route path="/automation" element={<AutomationControl />} />
+      <Route path="/cryptocurrency" element={<Cryptocurrency />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -73,6 +75,7 @@ function AppContent() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/system-health" element={<SystemHealth />} />
         <Route path="/automation" element={<AutomationControl />} />
+        <Route path="/cryptocurrency" element={<Cryptocurrency />} />
         <Route path="/landing" element={<Landing />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<NotFound />} />
