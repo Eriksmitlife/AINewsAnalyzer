@@ -14,6 +14,7 @@ import { realtimeService } from "./services/realtimeService";
 import { gamificationService } from "./services/gamificationService";
 import { recommendationService } from "./services/recommendationService";
 import { autoNewsCoin } from "./services/cryptocurrencyService";
+import { musicGenerationService } from "./services/musicGenerationService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateOGImageUrl } from "./services/ogImageService";
@@ -419,6 +420,44 @@ export async function registerRoutes(app: Application): Promise<Server> {
     } catch (error) {
       console.error("Error bulk generating NFTs:", error);
       res.status(500).json({ message: "Failed to bulk generate NFTs" });
+    }
+  });
+
+  // Music generation routes
+  app.post('/api/music/generate/:articleId', apiLimiter, async (req, res) => {
+    try {
+      const { articleId } = req.params;
+      const article = await storage.getArticleById(articleId);
+      
+      if (!article) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+
+      const musicData = await musicGenerationService.generateMusic(articleId, article);
+      
+      // Update article with music data
+      await storage.updateArticle(articleId, {
+        musicUrl: musicData.musicUrl,
+        musicPrompt: musicData.prompt,
+        musicStyle: musicData.style,
+        musicMood: musicData.mood,
+        musicGeneratedAt: new Date()
+      });
+
+      res.json(musicData);
+    } catch (error) {
+      console.error("Error generating music:", error);
+      res.status(500).json({ message: "Failed to generate music" });
+    }
+  });
+
+  app.get('/api/music/stats', cacheMiddleware(300), async (req, res) => {
+    try {
+      const stats = await musicGenerationService.getMusicStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching music stats:", error);
+      res.status(500).json({ message: "Failed to fetch music statistics" });
     }
   });
 

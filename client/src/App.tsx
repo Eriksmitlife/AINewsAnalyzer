@@ -52,34 +52,49 @@ function App() {
 }
 
 function AppContent() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
 
-  if (!user) {
+  // Show landing page for unauthenticated users or while loading
+  if (isLoading || !user) {
     return (
-      <Routes>
-        <Route path="/landing" element={<Landing />} />
-        <Route path="*" element={<Navigate to="/landing" replace />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/landing" element={<Landing />} />
+          <Route path="/marketplace" element={<NFTMarketplace />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/cryptocurrency" element={<Cryptocurrency />} />
+          <Route path="/exchange" element={<Exchange />} />
+          <Route path="/trading" element={<Trading />} />
+          <Route path="/auctions" element={<LiveAuctions />} />
+          <Route path="/quantum-ai" element={<QuantumAI />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/system-health" element={<SystemHealth />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Layout>
     );
   }
 
+  // Show dashboard for authenticated users
   return (
     <Layout>
       <Routes>
+        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/news" element={<News />} />
-        <Route path="/nft-marketplace" element={<NFTMarketplace />} />
+        <Route path="/marketplace" element={<NFTMarketplace />} />
         <Route path="/exchange" element={<Exchange />} />
         <Route path="/trading" element={<Trading />} />
-        <Route path="/live-auctions" element={<LiveAuctions />} />
+        <Route path="/auctions" element={<LiveAuctions />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/system-health" element={<SystemHealth />} />
         <Route path="/automation" element={<AutomationControl />} />
+        <Route path="/quantum-ai" element={<QuantumAI />} />
         <Route path="/cryptocurrency" element={<Cryptocurrency />} />
         <Route path="/landing" element={<Landing />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

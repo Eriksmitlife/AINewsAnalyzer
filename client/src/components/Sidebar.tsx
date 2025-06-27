@@ -83,17 +83,18 @@ export default function Sidebar() {
 
   return (
     <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-40">
-      <div className="flex flex-col flex-grow pt-5 bg-white dark:bg-gray-800 overflow-y-auto border-r border-gray-200 dark:border-gray-700 theme-surface">
+      <div className="flex flex-col flex-grow pt-5 cyber-glass overflow-y-auto border-r border-cyan-500/30">
         <div className="flex items-center flex-shrink-0 px-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center animate-pulse">
-              <span className="text-white font-bold text-sm">AI</span>
+            <div className="w-10 h-10 cyber-logo-gradient rounded-lg flex items-center justify-center animate-pulse cyber-glow-cyan">
+              <span className="text-white font-bold text-sm font-orbitron">AI</span>
             </div>
-            <span className="font-bold text-xl text-gray-900 dark:text-white title-responsive">
+            <span className="font-bold text-xl cyber-text-gradient title-responsive font-orbitron">
               AutoNews.AI
             </span>
-            <Badge variant="outline" className="text-xs">
-              v2.0
+            <Badge className="cyber-badge-feature text-xs">
+              <Zap className="w-3 h-3 mr-1" />
+              v3.0
             </Badge>
           </div>
         </div>
@@ -109,9 +110,9 @@ export default function Sidebar() {
                   <div
                     className={cn(
                       isActive
-                        ? "bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-200 border-r-2 border-blue-600"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white",
-                      "group flex items-center px-2 py-2 text-sm font-medium rounded-md cursor-pointer transition-all duration-200 hover:translate-x-1"
+                        ? "bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-400 border-r-2 border-cyan-500 cyber-glow-cyan"
+                        : "text-gray-300 hover:bg-cyan-500/10 hover:text-cyan-400",
+                      "group flex items-center px-2 py-2 text-sm font-medium font-rajdhani rounded-md cursor-pointer transition-all duration-200 hover:translate-x-1 hover:backdrop-blur-sm"
                     )}
                   >
                     <item.icon

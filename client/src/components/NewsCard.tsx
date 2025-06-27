@@ -13,7 +13,11 @@ import {
   CheckCircle, 
   TrendingUp,
   Eye,
-  Clock
+  Clock,
+  Music,
+  Play,
+  Pause,
+  Volume2
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -26,6 +30,8 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isGeneratingMusic, setIsGeneratingMusic] = useState(false);
 
   const favoriteMutation = useMutation({
     mutationFn: async () => {
@@ -88,6 +94,29 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
       toast({
         title: "Error",
         description: "Failed to generate NFT",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateMusicMutation = useMutation({
+    mutationFn: async () => {
+      setIsGeneratingMusic(true);
+      return await apiRequest('POST', `/api/music/generate/${article.id}`);
+    },
+    onSuccess: (data) => {
+      setIsGeneratingMusic(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/news"] });
+      toast({
+        title: "Music Generated!",
+        description: `Created ${data.style} music with ${data.mood} mood`,
+      });
+    },
+    onError: (error) => {
+      setIsGeneratingMusic(false);
+      toast({
+        title: "Error",
+        description: "Failed to generate music",
         variant: "destructive",
       });
     },
@@ -315,6 +344,39 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
                 <Palette className="w-4 h-4 mr-1" />
                 Create NFT
               </Button>
+
+              {article.musicUrl ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => window.open(article.musicUrl, '_blank')}
+                  className="hover:text-purple-600"
+                  title={`${article.musicStyle} music - ${article.musicMood} mood`}
+                >
+                  <Volume2 className="w-4 h-4 mr-1" />
+                  Play Music
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => generateMusicMutation.mutate()}
+                  disabled={isGeneratingMusic}
+                  className="hover:text-purple-600"
+                >
+                  {isGeneratingMusic ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full mr-1" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Music className="w-4 h-4 mr-1" />
+                      Generate Music
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
 
             <Button

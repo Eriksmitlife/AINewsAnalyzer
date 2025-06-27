@@ -13,9 +13,11 @@ import {
   uuid,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+const uniqueIndex = index;
 
 // Session storage table (mandatory for Replit Auth)
 export const sessions = pgTable(
@@ -72,6 +74,12 @@ export const articles = pgTable("articles", {
   trendingScore: decimal("trending_score", { precision: 5, scale: 4 }),
   isVerified: boolean("is_verified").default(false),
   viewCount: integer("view_count").default(0),
+  // Music generation fields
+  musicUrl: varchar("music_url", { length: 1000 }),
+  musicPrompt: text("music_prompt"),
+  musicStyle: varchar("music_style", { length: 100 }),
+  musicMood: varchar("music_mood", { length: 50 }),
+  musicGeneratedAt: timestamp("music_generated_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -238,6 +246,131 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
     references: [users.id],
   }),
 }));
+
+// User Levels and Tiers
+export const userLevels = pgTable("user_levels", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  level: integer("level").notNull().default(1), // 1-100
+  tier: varchar("tier").notNull().default("bronze"), // bronze, silver, gold, platinum, diamond, emerald, legendary
+  experience: integer("experience").notNull().default(0),
+  totalEarnings: real("total_earnings").notNull().default(0),
+  challengesCompleted: integer("challenges_completed").notNull().default(0),
+  referralCount: integer("referral_count").notNull().default(0),
+  achievementPoints: integer("achievement_points").notNull().default(0),
+  powerScore: integer("power_score").notNull().default(0),
+  weeklyActivity: integer("weekly_activity").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_user_levels_user").on(table.userId),
+  index("idx_user_levels_tier").on(table.tier),
+  index("idx_user_levels_power_score").on(table.powerScore),
+]);
+
+// Challenges and Tasks
+export const challenges = pgTable("challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category").notNull(), // social, content, trading, referral, special
+  type: varchar("type").notNull(), // daily, weekly, monthly, achievement
+  difficulty: varchar("difficulty").notNull(), // easy, medium, hard, legendary
+  reward: real("reward").notNull(), // ANC tokens
+  experiencePoints: integer("experience_points").notNull(),
+  requirements: jsonb("requirements").notNull(), // JSON with task requirements
+  icon: varchar("icon"),
+  color: varchar("color"),
+  minLevel: integer("min_level").notNull().default(1),
+  maxCompletions: integer("max_completions").default(1),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_challenges_category").on(table.category),
+  index("idx_challenges_type").on(table.type),
+  index("idx_challenges_active").on(table.isActive),
+]);
+
+// User Challenge Progress
+export const userChallenges = pgTable("user_challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  challengeId: varchar("challenge_id").notNull().references(() => challenges.id, { onDelete: "cascade" }),
+  status: varchar("status").notNull().default("in_progress"), // in_progress, completed, claimed
+  progress: jsonb("progress").notNull().default(sql`'{}'::jsonb`),
+  completions: integer("completions").notNull().default(0),
+  completedAt: timestamp("completed_at"),
+  claimedAt: timestamp("claimed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_user_challenges_user").on(table.userId),
+  index("idx_user_challenges_status").on(table.status),
+  uniqueIndex("idx_user_challenge_unique").on(table.userId, table.challengeId),
+]);
+
+// Referral System
+export const referrals = pgTable("referrals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  referrerId: varchar("referrer_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  referredId: varchar("referred_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  status: varchar("status").notNull().default("pending"), // pending, active, rewarded
+  referralCode: varchar("referral_code").notNull(),
+  rewardAmount: real("reward_amount").notNull().default(0),
+  bonusLevel: integer("bonus_level").notNull().default(1), // MLM bonus levels
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_referrals_referrer").on(table.referrerId),
+  index("idx_referrals_code").on(table.referralCode),
+  uniqueIndex("idx_referral_unique").on(table.referrerId, table.referredId),
+]);
+
+// Achievements
+export const achievements = pgTable("achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category").notNull(), // milestone, special, seasonal, legendary
+  icon: varchar("icon").notNull(),
+  rarity: varchar("rarity").notNull(), // common, rare, epic, legendary, mythic
+  points: integer("points").notNull(),
+  requirements: jsonb("requirements").notNull(),
+  reward: real("reward"), // Optional ANC reward
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_achievements_category").on(table.category),
+  index("idx_achievements_rarity").on(table.rarity),
+]);
+
+// User Achievements
+export const userAchievements = pgTable("user_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  achievementId: varchar("achievement_id").notNull().references(() => achievements.id, { onDelete: "cascade" }),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  claimed: boolean("claimed").notNull().default(false),
+}, (table) => [
+  index("idx_user_achievements_user").on(table.userId),
+  uniqueIndex("idx_user_achievement_unique").on(table.userId, table.achievementId),
+]);
+
+// Reward Transactions
+export const rewardTransactions = pgTable("reward_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type").notNull(), // challenge, referral, achievement, bonus, level_up
+  amount: real("amount").notNull(),
+  status: varchar("status").notNull().default("pending"), // pending, processing, completed, failed
+  sourceId: varchar("source_id"), // ID of challenge, referral, etc
+  sourceType: varchar("source_type"), // challenge, referral, achievement
+  transactionHash: varchar("transaction_hash"),
+  metadata: jsonb("metadata").default(sql`'{}'::jsonb`),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_reward_transactions_user").on(table.userId),
+  index("idx_reward_transactions_status").on(table.status),
+  index("idx_reward_transactions_type").on(table.type),
+]);
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users);
