@@ -2,12 +2,13 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { aiService } from "./services/aiService";
 import { newsService } from "./services/newsService";
+import { aiService } from "./services/aiService";
 import { nftService } from "./services/nftService";
 import { analyticsService } from "./services/analyticsService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
 import { z } from "zod";
+import { generateOGImageUrl } from "./services/ogImageService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -115,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
@@ -137,13 +138,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { articleId } = req.params;
       const article = await storage.getArticleById(articleId);
-      
+
       if (!article) {
         return res.status(404).json({ message: "Article not found" });
       }
 
       const analysis = await aiService.analyzeArticle(article);
-      
+
       // Update article with analysis results
       await storage.updateArticle(articleId, {
         sentiment: analysis.sentiment,
@@ -164,13 +165,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { articleId } = req.params;
       const article = await storage.getArticleById(articleId);
-      
+
       if (!article) {
         return res.status(404).json({ message: "Article not found" });
       }
 
       const rewrittenContent = await aiService.rewriteContent(article.content || '');
-      
+
       res.json({ 
         original: article.content,
         rewritten: rewrittenContent 
@@ -242,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { articleId } = req.params;
-      
+
       const article = await storage.getArticleById(articleId);
       if (!article) {
         return res.status(404).json({ message: "Article not found" });
@@ -260,7 +261,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      
+
       const transaction = await nftService.purchaseNft(id, userId);
       res.status(201).json(transaction);
     } catch (error) {
@@ -273,19 +274,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      
+
       const nft = await storage.getNftById(id);
       if (!nft) {
         return res.status(404).json({ message: "NFT not found" });
       }
-      
+
       if (nft.ownerId !== userId) {
         return res.status(403).json({ message: "Forbidden: You don't own this NFT" });
       }
 
       const { price, isForSale } = req.body;
       const updates: any = {};
-      
+
       if (price !== undefined) updates.price = price.toString();
       if (isForSale !== undefined) updates.isForSale = isForSale;
 
@@ -317,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { articleId } = req.params;
-      
+
       const favorite = await storage.addToFavorites(userId, articleId);
       res.status(201).json(favorite);
     } catch (error) {
@@ -330,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { articleId } = req.params;
-      
+
       await storage.removeFromFavorites(userId, articleId);
       res.status(204).send();
     } catch (error) {
@@ -343,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { articleId } = req.params;
-      
+
       const isFavorited = await storage.isArticleFavorited(userId, articleId);
       res.json({ isFavorited });
     } catch (error) {
@@ -357,7 +358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
@@ -374,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
@@ -399,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         memory: process.memoryUsage(),
         env: process.env.NODE_ENV || 'development',
       };
-      
+
       res.json(healthStatus);
     } catch (error) {
       console.error("Health check error:", error);
@@ -416,14 +417,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
       newsService.stopNewsCollection();
       await newsService.scheduleNewsCollection();
-      
+
       res.json({ message: "News collection restarted successfully" });
     } catch (error) {
       console.error("Error restarting news collection:", error);
@@ -436,7 +437,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
@@ -453,7 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      
+
       if (user?.role !== 'admin') {
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
@@ -632,7 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const userNfts = await storage.getNfts({ ownerId: userId });
       const userTransactions = await storage.getNftTransactions(undefined, userId);
-      
+
       const portfolioData = {
         overview: {
           totalValue: userNfts.reduce((sum, nft) => sum + parseFloat(nft.price || '0'), 0),
@@ -691,7 +692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalProfitPercent: 12.5
         }
       };
-      
+
       res.json(portfolioData);
     } catch (error) {
       console.error("Error fetching portfolio data:", error);
@@ -721,6 +722,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error auto-creating NFTs:", error);
       res.status(500).json({ message: "Failed to auto-create NFTs" });
     }
+  });
+
+  // OG Image Generation for SEO
+  app.get("/api/og-image/:articleId", async (req, res) => {
+    try {
+      const { articleId } = req.params;
+      const articles = await storage.getArticles({ limit: 1, search: articleId });
+
+      if (articles.length === 0) {
+        return res.status(404).json({ message: "Article not found" });
+      }
+
+      const article = articles[0];
+
+      // Generate OG image URL with dynamic content
+      const ogImageUrl = generateOGImageUrl(article);
+
+      // Redirect to the generated image or return image data
+      res.redirect(ogImageUrl);
+    } catch (error) {
+      console.error("Error generating OG image:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // SEO Sitemap
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const articles = await storage.getArticles({ limit: 1000 });
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+      let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+
+      // Add main pages
+      const mainPages = ['/', '/news', '/exchange', '/trading', '/auctions', '/analytics'];
+      mainPages.forEach(page => {
+        sitemap += `
+  <url>
+    <loc>${baseUrl}${page}</loc>
+    <lastmod>${new Date().toISOString()}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      });
+
+      // Add article pages
+      articles.forEach(article => {
+        sitemap += `
+  <url>
+    <loc>${baseUrl}/news/${article.id}</loc>
+    <lastmod>${article.updatedAt || article.publishedAt}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+      });
+
+      sitemap += `
+</urlset>`;
+
+      res.set('Content-Type', 'application/xml');
+      res.send(sitemap);
+    } catch (error) {
+      console.error("Error generating sitemap:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Robots.txt for SEO
+  app.get("/robots.txt", (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const robotsTxt = `User-agent: *
+Allow: /
+Sitemap: ${baseUrl}/sitemap.xml
+
+# Allow all crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Disallow admin areas
+Disallow: /api/admin/
+Disallow: /api/auth/
+
+# Crawl-delay for all bots
+Crawl-delay: 1`;
+
+    res.set('Content-Type', 'text/plain');
+    res.send(robotsTxt);
   });
 
   const httpServer = createServer(app);

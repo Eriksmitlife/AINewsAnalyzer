@@ -1,121 +1,212 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
+import { Bell, LogOut, Settings, User, Globe, Palette, Moon, Sun, Zap } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSeparator 
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuSub,
 } from "@/components/ui/dropdown-menu";
-import { Brain, Search, Bell, Settings, User, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { i18n, SUPPORTED_LANGUAGES } from "@/lib/i18n";
+import { themeService, THEMES } from "@/lib/themes";
 
 export default function Header() {
-  const { user } = useAuth();
-  const [search, setSearch] = useState("");
+  const { user, logout } = useAuth();
+  const [currentLang, setCurrentLang] = useState(i18n.getCurrentLanguage());
+  const [currentTheme, setCurrentTheme] = useState(themeService.getCurrentTheme());
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    console.log("Searching for:", search);
+  useEffect(() => {
+    const unsubscribeLang = i18n.subscribe(() => {
+      setCurrentLang(i18n.getCurrentLanguage());
+    });
+
+    const unsubscribeTheme = themeService.subscribe(() => {
+      setCurrentTheme(themeService.getCurrentTheme());
+    });
+
+    return () => {
+      unsubscribeLang();
+      unsubscribeTheme();
+    };
+  }, []);
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.setLanguage(langCode);
   };
 
-  const getInitials = (firstName?: string, lastName?: string) => {
-    const first = firstName?.charAt(0) || "";
-    const last = lastName?.charAt(0) || "";
-    return (first + last).toUpperCase() || "U";
+  const handleThemeChange = (themeId: string) => {
+    themeService.setTheme(themeId);
+  };
+
+  const currentLanguage = SUPPORTED_LANGUAGES.find(lang => lang.code === currentLang);
+
+  const getThemeIcon = (themeId: string) => {
+    switch (themeId) {
+      case 'light': return <Sun className="h-4 w-4" />;
+      case 'dark': return <Moon className="h-4 w-4" />;
+      case 'neon': return <Zap className="h-4 w-4" />;
+      default: return <Palette className="h-4 w-4" />;
+    }
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <Brain className="w-5 h-5 text-white" />
-            </div>
-            <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">
-              AutoNews.AI
-            </span>
-          </div>
-
-          {/* Search Bar */}
-          <div className="flex-1 max-w-lg mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="w-4 h-4 text-gray-400" />
+    <header className="border-b bg-white dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
+      <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex items-center space-x-4">
+          <Link href="/">
+            <div className="flex items-center space-x-2 cursor-pointer group">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                <span className="text-white font-bold text-sm">AI</span>
               </div>
-              <Input
-                type="text"
-                placeholder="Search news, NFTs, or topics..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 focus-ring"
-              />
-            </form>
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center p-0">
-                3
+              <span className="font-bold text-xl text-gray-900 dark:text-white group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all">
+                AutoNews.AI
+              </span>
+              <Badge variant="secondary" className="text-xs">
+                BETA
               </Badge>
-            </Button>
+            </div>
+          </Link>
+        </div>
 
-            {/* User Dropdown */}
+        <div className="flex items-center space-x-2">
+          {/* Language Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2">
+                <Globe className="h-4 w-4 mr-1" />
+                <span className="text-sm font-medium">
+                  {currentLanguage?.flag} {currentLanguage?.code.toUpperCase()}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="p-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  {i18n.translate('selectLanguage')}
+                </p>
+              </div>
+              {SUPPORTED_LANGUAGES.map((language) => (
+                <DropdownMenuItem
+                  key={language.code}
+                  onClick={() => handleLanguageChange(language.code)}
+                  className={`flex items-center justify-between ${
+                    language.code === currentLang ? 'bg-accent' : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <span className="mr-2">{language.flag}</span>
+                    <span>{language.name}</span>
+                  </div>
+                  {language.code === currentLang && (
+                    <Badge variant="secondary" className="text-xs">
+                      Active
+                    </Badge>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Theme Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2">
+                {getThemeIcon(currentTheme.id)}
+                <span className="ml-1 text-sm font-medium">
+                  {i18n.translate(`themes.${currentTheme.id}`)}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="p-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  Choose Theme
+                </p>
+              </div>
+              {THEMES.map((theme) => (
+                <DropdownMenuItem
+                  key={theme.id}
+                  onClick={() => handleThemeChange(theme.id)}
+                  className={`flex items-center justify-between ${
+                    theme.id === currentTheme.id ? 'bg-accent' : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    {getThemeIcon(theme.id)}
+                    <div className="ml-2">
+                      <p className="font-medium">{theme.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {theme.description}
+                      </p>
+                    </div>
+                  </div>
+                  {theme.id === currentTheme.id && (
+                    <Badge variant="secondary" className="text-xs">
+                      Active
+                    </Badge>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Bell className="h-4 w-4" />
+          </Button>
+
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-3 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage 
-                      src={user?.profileImageUrl || undefined} 
-                      alt="Profile"
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold">
-                      {getInitials(user?.firstName, user?.lastName)}
+                    <AvatarFallback>
+                      {user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
-                    {user?.firstName || user?.lastName 
-                      ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim()
-                      : 'User'
-                    }
-                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <div className="px-2 py-1.5 text-sm">
-                  <div className="font-medium">{user?.firstName || 'User'}</div>
-                  <div className="text-gray-500">{user?.email}</div>
-                </div>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user.email}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      ID: {user.id}
+                    </p>
+                  </div>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{i18n.translate('nav.profile')}</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => window.location.href = "/api/logout"}
-                  className="text-red-600 dark:text-red-400"
-                >
+                <DropdownMenuItem onClick={logout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          ) : (
+            <Button asChild size="sm">
+              <a href="/api/login">Login</a>
+            </Button>
+          )}
         </div>
       </div>
     </header>

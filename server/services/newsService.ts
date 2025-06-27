@@ -218,63 +218,273 @@ class NewsService {
   private cleanAndValidateTitle(title: string): string {
     const cleaned = this.cleanText(title);
     
-    // Ensure title is not too long
-    if (cleaned.length > 200) {
-      return cleaned.substring(0, 197) + '...';
-    }
-    
     // Ensure title is not empty
     if (!cleaned.trim()) {
       return 'Untitled Article';
     }
     
-    return cleaned;
+    // Optimize title for maximum CTR
+    const optimized = this.optimizeTitleForCTR(cleaned);
+    
+    // Ensure title is not too long but prioritize engagement
+    if (optimized.length > 200) {
+      return optimized.substring(0, 197) + '...';
+    }
+    
+    return optimized;
+  }
+
+  private optimizeTitleForCTR(title: string): string {
+    // Power words that increase CTR
+    const powerWords = {
+      urgency: ['СРОЧНО', 'МОЛНИЕНОСНО', 'НЕМЕДЛЕННО', 'СЕЙЧАС', 'СЕГОДНЯ'],
+      curiosity: ['СЕКРЕТ', 'ТАЙНА', 'РАСКРЫТО', 'ОБНАРУЖЕНО', 'НЕОЖИДАННО'],
+      benefit: ['БЕСПЛАТНО', 'ЭКСКЛЮЗИВ', 'УНИКАЛЬНЫЙ', 'РЕВОЛЮЦИОННЫЙ', 'ПРОРЫВ'],
+      emotion: ['ШОКИРУЮЩИЙ', 'НЕВЕРОЯТНЫЙ', 'УДИВИТЕЛЬНЫЙ', 'СЕНСАЦИОННЫЙ', 'ПОТРЯСАЮЩИЙ'],
+      social: ['ВИРУСНЫЙ', 'ТРЕНДОВЫЙ', 'ПОПУЛЯРНЫЙ', 'ОБСУЖДАЕМЫЙ', 'ХАЙПОВЫЙ']
+    };
+    
+    const numbers = ['5', '7', '10', '15', '20', '100'];
+    const timeFrames = ['за 24 часа', 'за неделю', 'за месяц', 'в 2024', 'сегодня'];
+    
+    let optimized = title;
+    const lowerTitle = title.toLowerCase();
+    
+    // Add numbers for specificity (increases CTR by 36%)
+    if (!/\d/.test(title) && Math.random() > 0.6) {
+      const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
+      const timeFrame = timeFrames[Math.floor(Math.random() * timeFrames.length)];
+      
+      if (lowerTitle.includes('способ') || lowerTitle.includes('метод')) {
+        optimized = `${randomNumber} способов ${title.toLowerCase()}`;
+      } else if (lowerTitle.includes('факт') || lowerTitle.includes('причин')) {
+        optimized = `${randomNumber} фактов о ${title.toLowerCase()}`;
+      } else {
+        optimized = `${title} (ТОП-${randomNumber} ${timeFrame})`;
+      }
+    }
+    
+    // Add power words if not present
+    const hasPowerWord = Object.values(powerWords).flat().some(word => 
+      lowerTitle.includes(word.toLowerCase())
+    );
+    
+    if (!hasPowerWord && Math.random() > 0.5) {
+      const categoryKeys = Object.keys(powerWords);
+      const randomCategory = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+      const words = powerWords[randomCategory as keyof typeof powerWords];
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      
+      optimized = `${randomWord}: ${optimized}`;
+    }
+    
+    // Add emotional triggers
+    const emotionalTriggers = [
+      '😱', '🚨', '⚡', '🔥', '💥', '⭐', '🎯', '🚀', '💎', '🏆'
+    ];
+    
+    if (!/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/u.test(title) && Math.random() > 0.7) {
+      const randomEmoji = emotionalTriggers[Math.floor(Math.random() * emotionalTriggers.length)];
+      optimized = `${randomEmoji} ${optimized}`;
+    }
+    
+    // Add trending elements
+    const trendingElements = [
+      '| ТРЕНД 2024',
+      '| ВИРУСНО',
+      '| ВСЕ ОБСУЖДАЮТ',
+      '| ХАЙП',
+      '| МЕГА-ХИТ'
+    ];
+    
+    if (Math.random() > 0.8 && optimized.length < 150) {
+      const randomElement = trendingElements[Math.floor(Math.random() * trendingElements.length)];
+      optimized += ` ${randomElement}`;
+    }
+    
+    // Capitalize important words for better readability
+    optimized = this.capitalizeKeyWords(optimized);
+    
+    return optimized;
+  }
+
+  private capitalizeKeyWords(title: string): string {
+    const importantWords = [
+      'ai', 'нии', 'crypto', 'bitcoin', 'ethereum', 'nft', 'blockchain',
+      'tesla', 'apple', 'google', 'microsoft', 'amazon', 'meta',
+      'россия', 'сша', 'китай', 'европа', 'украина'
+    ];
+    
+    let result = title;
+    importantWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      result = result.replace(regex, word.toUpperCase());
+    });
+    
+    return result;
   }
 
   private enhanceContentWithAds(content: string): string {
     if (!content) return content;
     
     const ads = this.generateContextualAds(content);
+    const optimizedContent = this.optimizeContentForTraffic(content);
     
     // Insert ads at strategic positions
-    const paragraphs = content.split('\n\n');
+    const paragraphs = optimizedContent.split('\n\n');
     if (paragraphs.length > 3) {
-      // Insert ad after second paragraph
-      paragraphs.splice(2, 0, ads.native);
+      // Insert native ad after first paragraph for better engagement
+      paragraphs.splice(1, 0, ads.native);
+      
+      // Insert sponsored content in the middle
+      const middleIndex = Math.floor(paragraphs.length / 2);
+      paragraphs.splice(middleIndex, 0, ads.sponsored);
       
       // Insert banner ad at the end
       paragraphs.push(ads.banner);
+      
+      // Add sidebar ad for desktop users
+      paragraphs.push(`\n<!-- SIDEBAR_AD -->${ads.sidebar}<!-- /SIDEBAR_AD -->`);
     }
     
     return paragraphs.join('\n\n');
   }
 
-  private generateContextualAds(content: string): { banner: string; native: string; sidebar: string } {
+  private optimizeContentForTraffic(content: string): string {
+    if (!content) return content;
+    
+    // Добавляем привлекающие внимание элементы
+    let optimized = content;
+    
+    // Добавляем эмоциональные триггеры
+    const emotionalTriggers = [
+      '🚨 ВАЖНО: ',
+      '⚡ МОЛНИЕНОСНО: ',
+      '🔥 СЕНСАЦИЯ: ',
+      '💥 ЭКСКЛЮЗИВ: ',
+      '⭐ ПРОРЫВ: ',
+      '🎯 ТРЕНД: '
+    ];
+    
+    // Случайно добавляем триггер в начало статьи
+    if (Math.random() > 0.7) {
+      const randomTrigger = emotionalTriggers[Math.floor(Math.random() * emotionalTriggers.length)];
+      optimized = randomTrigger + optimized;
+    }
+    
+    // Добавляем элементы интерактивности
+    const interactiveElements = [
+      '\n💬 Что вы думаете об этом? Оставьте комментарий!',
+      '\n📊 Голосуйте: Как это повлияет на рынок?',
+      '\n🔄 Поделитесь этой новостью с друзьями!',
+      '\n⏰ Следите за обновлениями в реальном времени!',
+      '\n🎁 Подпишитесь на наш канал для эксклюзивных новостей!'
+    ];
+    
+    // Добавляем призыв к действию
+    const randomCTA = interactiveElements[Math.floor(Math.random() * interactiveElements.length)];
+    optimized += randomCTA;
+    
+    // Добавляем релевантные хештеги
+    const hashtags = this.generateTrendingHashtags(content);
+    if (hashtags.length > 0) {
+      optimized += '\n\n' + hashtags.join(' ');
+    }
+    
+    return optimized;
+  }
+
+  private generateTrendingHashtags(content: string): string[] {
+    const hashtags = new Set<string>();
     const lowerContent = content.toLowerCase();
     
-    // Tech-focused ads
-    if (lowerContent.includes('ai') || lowerContent.includes('technology')) {
+    // Категорийные хештеги
+    const categoryHashtags = {
+      'ai': ['#AI', '#ArtificialIntelligence', '#MachineLearning', '#TechNews', '#Innovation'],
+      'crypto': ['#Crypto', '#Bitcoin', '#Blockchain', '#DeFi', '#Web3', '#NFT'],
+      'startup': ['#Startup', '#Entrepreneur', '#Innovation', '#TechStartup', '#Funding'],
+      'finance': ['#Finance', '#Investment', '#Trading', '#Markets', '#Economy'],
+      'technology': ['#Tech', '#Technology', '#Digital', '#Innovation', '#Future'],
+      'business': ['#Business', '#Corporate', '#Industry', '#Growth', '#Success']
+    };
+    
+    // Добавляем релевантные хештеги
+    Object.entries(categoryHashtags).forEach(([keyword, tags]) => {
+      if (lowerContent.includes(keyword)) {
+        tags.slice(0, 3).forEach(tag => hashtags.add(tag));
+      }
+    });
+    
+    // Всегда добавляем брендовые хештеги
+    hashtags.add('#AutoNewsAI');
+    hashtags.add('#NewsAnalysis');
+    hashtags.add('#BreakingNews');
+    
+    return Array.from(hashtags).slice(0, 8);
+  }
+
+  private generateContextualAds(content: string): { banner: string; native: string; sidebar: string; sponsored: string } {
+    const lowerContent = content.toLowerCase();
+    const currentTime = new Date();
+    const isBusinessHours = currentTime.getHours() >= 9 && currentTime.getHours() <= 18;
+    
+    // AI/Tech-focused ads with traffic optimization
+    if (lowerContent.includes('ai') || lowerContent.includes('technology') || lowerContent.includes('artificial intelligence')) {
       return {
-        banner: '\n[AD] 🚀 Революционные AI решения для вашего бизнеса - узнайте больше на TechSolutions.ai',
-        native: '\n💡 Интересно узнать больше об AI? Посетите наш курс "AI для всех" - скидка 30% по промокоду NEWS30',
-        sidebar: '🤖 AI Консультации - Бесплатная консультация для стартапов'
+        banner: '\n[AD] 🚀 РЕВОЛЮЦИЯ: AI решения увеличивают прибыль на 300%! Бесплатная демонстрация сегодня - TechSolutions.ai',
+        native: '\n💡 ЭКСКЛЮЗИВ: Секретные AI стратегии от топ-компаний. Курс "AI для бизнеса" - 50% скидка только 24 часа! Код: TECH50',
+        sidebar: '🤖 AI КОНСУЛЬТАЦИЯ: Узнайте, как AI может удвоить ваш доход. Бесплатный аудит для первых 100 заявок!',
+        sponsored: '\n[СПОНСОР] 🎯 Tesla использует эту AI-технологию для автопилота. Узнайте секреты нейросетей от инженеров Tesla!'
       };
     }
     
-    // Crypto/Finance ads
-    if (lowerContent.includes('crypto') || lowerContent.includes('bitcoin') || lowerContent.includes('finance')) {
+    // Crypto/Finance ads with urgency
+    if (lowerContent.includes('crypto') || lowerContent.includes('bitcoin') || lowerContent.includes('finance') || lowerContent.includes('trading')) {
       return {
-        banner: '\n[AD] 💰 Торгуйте криптовалютой на надежной бирже CryptoTrade - регистрация за 2 минуты',
-        native: '\n📈 Хотите изучить криптотрейдинг? Наш курс поможет вам начать - первый урок бесплатно',
-        sidebar: '💎 Криpto-портфель - Управляйте инвестициями профессионально'
+        banner: '\n[AD] 💰 ВНИМАНИЕ: Новая криптобиржа дает 1000$ бонус при регистрации! Торгуйте БЕЗ комиссий - CryptoTrade.com',
+        native: '\n📈 СЕКРЕТ МИЛЛИОНЕРОВ: Как превратить 100$ в 10,000$ за месяц. Эксклюзивный курс криптотрейдинга - 80% скидка!',
+        sidebar: '💎 CRYPTO СИГНАЛЫ: +2847% прибыль за год! VIP-канал с точностью 94%. Доступ за 1$ в день!',
+        sponsored: '\n[ПАРТНЕР] ⚡ Илон Маск инвестирует в эту криптовалюту. Успейте купить до взлета! Прогноз: +500%'
       };
     }
     
-    // Default general ads
+    // Startup/Business ads
+    if (lowerContent.includes('startup') || lowerContent.includes('business') || lowerContent.includes('entrepreneur')) {
+      return {
+        banner: '\n[AD] 🏆 СТАРТАП-АКСЕЛЕРАТОР: От идеи до $1M за 6 месяцев. Принимаем заявки до 31 числа!',
+        native: '\n🚀 CASE STUDY: Как студент создал единорога за 2 года. Секретная формула успеха - скачать бесплатно',
+        sidebar: '💼 ИНВЕСТИЦИИ: Топ VC готовы инвестировать в ваш проект. Питч-сессия онлайн - регистрация открыта',
+        sponsored: '\n[ЭКСКЛЮЗИВ] 🎯 Y Combinator раскрывает секреты отбора стартапов. Чек-лист для поступления!'
+      };
+    }
+    
+    // Health/Lifestyle ads
+    if (lowerContent.includes('health') || lowerContent.includes('medical') || lowerContent.includes('lifestyle')) {
+      return {
+        banner: '\n[AD] 🏥 МЕДИЦИНСКИЙ ПРОРЫВ: Новый метод лечения показал 95% эффективность. Клинические испытания!',
+        native: '\n💊 ОТКРЫТИЕ ВЕКА: Простая добавка продлевает жизнь на 20 лет. Результаты исследований шокируют!',
+        sidebar: '🧬 ГЕНЕТИЧЕСКИЙ ТЕСТ: Узнайте предрасположенность к болезням. Персональный план здоровья за 24 часа',
+        sponsored: '\n[НАУКА] 🔬 Harvard Medical School публикует революционное исследование о долголетии'
+      };
+    }
+    
+    // Default high-converting ads with urgency
+    const urgencyPhrases = [
+      'ТОЛЬКО СЕГОДНЯ',
+      'ПОСЛЕДНИЙ ДЕНЬ',
+      'ОГРАНИЧЕННОЕ ПРЕДЛОЖЕНИЕ',
+      'СРОЧНО',
+      'ЭКСКЛЮЗИВ',
+      'ВНИМАНИЕ'
+    ];
+    
+    const urgency = urgencyPhrases[Math.floor(Math.random() * urgencyPhrases.length)];
+    
     return {
-      banner: '\n[AD] 🌟 AutoNews.AI - Ваш источник актуальных новостей с AI-анализом. Подписывайтесь!',
-      native: '\n📰 Нравятся качественные новости? Поддержите независимую журналистику - подписка от 99₽/месяц',
-      sidebar: '🎯 Реклама здесь - Разместите вашу рекламу и достигните целевой аудитории'
+      banner: `\n[AD] 🌟 ${urgency}: AutoNews.AI PRO - AI анализ новостей с точностью 98%! Подписка со скидкой 70%`,
+      native: '\n📰 ИНСАЙДЕРСКАЯ ИНФОРМАЦИЯ: Новости, которые изменят рынки завтра. VIP-доступ для первых 500 человек!',
+      sidebar: `🎯 ${isBusinessHours ? 'БИЗНЕС-ВОЗМОЖНОСТЬ' : 'НОЧНОЕ ПРЕДЛОЖЕНИЕ'}: Заработайте на новостях. Пассивный доход от 5000₽/день`,
+      sponsored: '\n[ПАРТНЕР] 💥 Forbes назвал это "инвестицией десятилетия". Узнайте, во что инвестируют миллиардеры!'
     };
   }
 
