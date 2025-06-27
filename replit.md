@@ -147,6 +147,7 @@ The application uses a comprehensive PostgreSQL schema with the following key en
   - ✅ Created comprehensive deployment documentation and guides
   - 📝 **DEPLOYMENT COMMAND**: `node deploy.js` (replaces `npm run dev` in Replit deployment settings)
   - 📝 **STATUS**: Production-ready with full security compliance verified
+  - 🚨 **NEXT STEP**: Update run command in Replit Deploy > Configuration tab from `npm run dev` to `node deploy.js`
 - June 27, 2025: MLM система профилей завершена
   - ✅ Полная MLM система с вызовами, достижениями и уровнями
   - ✅ API эндпоинты для всех MLM функций с моковыми данными
