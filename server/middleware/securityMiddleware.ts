@@ -296,6 +296,15 @@ export const attachUserInfo = (req: Request, res: Response, next: NextFunction) 
     (req as any).web3User = web3User;
   }
 
+  // В режиме разработки добавляем демо пользователя если нет аутентификации
+  if (process.env.NODE_ENV === 'development' && !replitUserId && !web3User) {
+    (req as any).demoUser = {
+      id: 'demo-user',
+      name: 'Demo User',
+      roles: 'user'
+    };
+  }
+
   next();
 };
 

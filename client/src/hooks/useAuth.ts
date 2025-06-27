@@ -29,6 +29,10 @@ export function useAuth() {
       // Проверяем Replit Auth
       const replitResponse = await fetch('/api/auth/user', {
         credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
 
       if (replitResponse.ok) {
@@ -40,6 +44,10 @@ export function useAuth() {
       // Проверяем Web3 Auth
       const web3Response = await fetch('/api/auth/web3/user', {
         credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
 
       if (web3Response.ok) {
@@ -48,11 +56,40 @@ export function useAuth() {
         return;
       }
 
+      // Если оба метода не удались, создаем демо пользователя для тестирования
+      if (process.env.NODE_ENV === 'development') {
+        setUser({
+          id: 'demo-user',
+          email: 'demo@autonews.ai',
+          firstName: 'Demo',
+          lastName: 'User',
+          role: 'user',
+          level: 2,
+          ancBalance: '1250.75',
+          totalEarnings: '485.50'
+        });
+        return;
+      }
+
       // Пользователь не авторизован
       setUser(null);
     } catch (error) {
       console.error('Auth check error:', error);
-      setUser(null);
+      // В режиме разработки создаем демо пользователя
+      if (process.env.NODE_ENV === 'development') {
+        setUser({
+          id: 'demo-user',
+          email: 'demo@autonews.ai',
+          firstName: 'Demo',
+          lastName: 'User',
+          role: 'user',
+          level: 2,
+          ancBalance: '1250.75',
+          totalEarnings: '485.50'
+        });
+      } else {
+        setUser(null);
+      }
     } finally {
       setIsLoading(false);
     }
