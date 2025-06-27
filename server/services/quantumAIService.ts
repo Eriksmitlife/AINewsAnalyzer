@@ -397,10 +397,15 @@ class QuantumAIService {
   private async saveQuantumAnalysis(analysis: QuantumAnalysis): Promise<void> {
     await storage.recordSystemMetric({
       metricName: 'quantum_analysis',
-      value: JSON.stringify(analysis),
+      value: analysis.quantumScore, // Сохраняем числовое значение
       metadata: {
         articleId: analysis.articleId,
         quantumScore: analysis.quantumScore,
+        dimensionalFactors: analysis.dimensionalFactors,
+        marketImpactPrediction: analysis.marketImpactPrediction,
+        viralityMatrix: analysis.viralityMatrix,
+        investmentSignals: analysis.investmentSignals,
+        fullAnalysis: JSON.stringify(analysis), // Полный анализ в metadata
         timestamp: analysis.timestamp.toISOString()
       },
       timestamp: new Date()
