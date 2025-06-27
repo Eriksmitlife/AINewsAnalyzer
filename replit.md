@@ -138,6 +138,17 @@ The application uses a comprehensive PostgreSQL schema with the following key en
 
 ## Changelog
 
+- June 27, 2025: Deployment configuration fixed
+  - ✅ Fixed JavaScript errors preventing app startup
+  - ✅ Added missing TypeScript type definitions (@types/compression, @types/hpp)
+  - ✅ Resolved MLMProfile export/import issues
+  - ✅ Fixed NewsCard missing Zap icon import
+  - ✅ Created production deployment scripts (deploy.js, start.js)
+  - ✅ Added comprehensive deployment documentation
+  - ✅ Enhanced error handling in server startup
+  - ✅ App now runs successfully in development mode
+  - 🔧 **Deployment Issue**: .replit file uses 'npm run dev' instead of production script
+  - 📝 **Solution**: Use 'node deploy.js' or 'node start.js' for production deployment
 - June 27, 2025: MLM система профилей завершена
   - ✅ Полная MLM система с вызовами, достижениями и уровнями
   - ✅ API эндпоинты для всех MLM функций с моковыми данными

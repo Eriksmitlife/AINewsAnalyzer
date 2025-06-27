@@ -54,13 +54,20 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     // Log error with context
-    loggingService.error('Request error', err, {
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      statusCode: status
-    });
+    try {
+      loggingService.error('Request error', {
+        error: err.message,
+        stack: err.stack,
+        method: req.method,
+        url: req.originalUrl,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        statusCode: status
+      });
+    } catch (logError) {
+      console.error('Logging service error:', logError);
+      console.error('Original error:', err);
+    }
 
     res.status(status).json({ 
       message,

@@ -96,7 +96,7 @@ const iconMap: { [key: string]: any } = {
   Award, Target, Zap, ExternalLink
 };
 
-export default function MLMProfile() {
+function MLMProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
@@ -649,3 +649,5 @@ export default function MLMProfile() {
     </div>
   );
 }
+
+export default MLMProfile;

@@ -17,7 +17,8 @@ import {
   Music,
   Play,
   Pause,
-  Volume2
+  Volume2,
+  Zap
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
