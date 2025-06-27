@@ -181,7 +181,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // NFT routes
+  // NFT routes - specific routes before general ones
+  app.get('/api/nfts/available', async (req, res) => {
+    try {
+      const nfts = await storage.getNfts({ limit: 50, forSaleOnly: true });
+      const availableNfts = nfts.map(nft => ({
+        id: nft.id,
+        title: nft.name || nft.description || 'Untitled NFT',
+        currentPrice: parseFloat(nft.price || '0')
+      }));
+      res.json(availableNfts);
+    } catch (error) {
+      console.error("Error fetching available NFTs:", error);
+      res.status(500).json({ message: "Failed to fetch available NFTs" });
+    }
+  });
+
+  app.get('/api/nfts/transactions', async (req, res) => {
+    try {
+      const transactions = await storage.getNftTransactions();
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching NFT transactions:", error);
+      res.status(500).json({ message: "Failed to fetch NFT transactions" });
+    }
+  });
+
   app.get('/api/nfts', async (req, res) => {
     try {
       const { limit, offset, forSaleOnly, ownerId, creatorId } = req.query;
@@ -441,13 +466,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         topGainers: nfts.slice(0, 5).map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           price: parseFloat(nft.price || '0'),
           change: Math.random() * 50 + 10
         })),
         topLosers: nfts.slice(5, 10).map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           price: parseFloat(nft.price || '0'),
           change: -(Math.random() * 30 + 5)
         })),
@@ -499,16 +524,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const auctionsData = {
         featuredAuctions: nfts.slice(0, 6).map(nft => ({
           id: nft.id,
-          title: nft.title,
-          description: nft.description,
+          title: nft.name || nft.description || 'Untitled NFT',
+          description: nft.description || 'No description available',
           image: nft.imageUrl || 'https://via.placeholder.com/400x400?text=NFT',
           currentBid: parseFloat(nft.price || '100'),
           startingBid: parseFloat(nft.price || '100') * 0.5,
           endTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-          category: nft.metadata?.category || 'General',
+          category: (nft.metadata as any)?.category || 'General',
           seller: {
-            id: nft.ownerId,
-            name: `User_${nft.ownerId.slice(0, 8)}`,
+            id: nft.ownerId || 'unknown',
+            name: `User_${(nft.ownerId || 'unknown').slice(0, 8)}`,
             avatar: 'https://via.placeholder.com/40x40?text=U',
             verified: true
           },
@@ -524,12 +549,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalBids: Math.floor(Math.random() * 50),
           watchers: Math.floor(Math.random() * 200),
           isHot: Math.random() > 0.7,
-          sentiment: nft.metadata?.sentiment || 'neutral',
+          sentiment: (nft.metadata as any)?.sentiment || 'neutral',
           aiScore: Math.random()
         })),
         endingSoon: nfts.slice(6, 11).map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
           currentBid: parseFloat(nft.price || '100'),
           endTime: new Date(Date.now() + Math.random() * 2 * 60 * 60 * 1000).toISOString(),
@@ -537,14 +562,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         mostWatched: nfts.slice(11, 16).map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
           currentBid: parseFloat(nft.price || '100'),
           watchers: Math.floor(Math.random() * 300) + 50
         })),
         recentlyStarted: nfts.slice(16, 20).map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
           currentBid: parseFloat(nft.price || '100'),
           startTime: new Date(Date.now() - Math.random() * 60 * 60 * 1000).toISOString()
@@ -574,13 +599,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalActiveListings: userNfts.filter(nft => nft.isForSale).length,
           totalEarnings: userTransactions
             .filter(tx => tx.type === 'sale')
-            .reduce((sum, tx) => sum + parseFloat(tx.price), 0)
+            .reduce((sum, tx) => sum + parseFloat(tx.price || '0'), 0)
         },
         holdings: userNfts.map(nft => ({
           id: nft.id,
-          title: nft.title,
+          title: nft.name || nft.description || 'Untitled NFT',
           image: nft.imageUrl || 'https://via.placeholder.com/80x80?text=NFT',
-          category: nft.metadata?.category || 'General',
+          category: (nft.metadata as any)?.category || 'General',
           purchasePrice: parseFloat(nft.price || '0') * 0.8,
           currentPrice: parseFloat(nft.price || '0'),
           change: parseFloat(nft.price || '0') * 0.2,
@@ -595,13 +620,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           id: tx.id,
           type: tx.type,
           nftTitle: tx.nftId,
-          price: parseFloat(tx.price),
+          price: parseFloat(tx.price || '0'),
           quantity: 1,
-          fee: parseFloat(tx.price) * 0.025,
-          total: parseFloat(tx.price) * 1.025,
-          counterparty: tx.buyerId === userId ? tx.sellerId : tx.buyerId,
+          fee: parseFloat(tx.price || '0') * 0.025,
+          total: parseFloat(tx.price || '0') * 1.025,
+          counterparty: tx.fromUserId === userId ? tx.toUserId : tx.fromUserId,
           timestamp: tx.createdAt,
-          status: tx.status
+          status: tx.status || 'completed'
         })),
         earnings: [
           { date: '2024-01-15', amount: 250, source: 'sale' },
@@ -610,12 +635,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         performance: {
           bestPerformer: {
-            title: userNfts[0]?.title || 'No NFTs',
+            title: userNfts[0]?.name || userNfts[0]?.description || 'No NFTs',
             gain: 150,
             gainPercent: 25
           },
           worstPerformer: {
-            title: userNfts[1]?.title || 'No NFTs',
+            title: userNfts[1]?.name || userNfts[1]?.description || 'No NFTs',
             loss: 50,
             lossPercent: -8.5
           },
@@ -642,21 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Available NFTs for trading
-  app.get('/api/nfts/available', async (req, res) => {
-    try {
-      const nfts = await storage.getNfts({ limit: 50, forSaleOnly: true });
-      const availableNfts = nfts.map(nft => ({
-        id: nft.id,
-        title: nft.title,
-        currentPrice: parseFloat(nft.price || '0')
-      }));
-      res.json(availableNfts);
-    } catch (error) {
-      console.error("Error fetching available NFTs:", error);
-      res.status(500).json({ message: "Failed to fetch available NFTs" });
-    }
-  });
+
 
   // Automated NFT creation from trending articles
   app.post('/api/auto-create-nfts', async (req, res) => {

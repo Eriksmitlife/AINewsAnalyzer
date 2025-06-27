@@ -184,8 +184,8 @@ export default function Portfolio() {
                     {(portfolioData?.overview.totalChangePercent24h || 0) >= 0 ? 
                       <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />
                     }
-                    {portfolioData?.overview.totalChangePercent24h >= 0 ? '+' : ''}
-                    {portfolioData?.overview.totalChangePercent24h.toFixed(2)}% (24ч)
+                    {(portfolioData?.overview.totalChangePercent24h || 0) >= 0 ? '+' : ''}
+                    {(portfolioData?.overview.totalChangePercent24h || 0).toFixed(2)}% (24ч)
                   </div>
                 </div>
                 <Wallet className="h-8 w-8 text-blue-500" />
