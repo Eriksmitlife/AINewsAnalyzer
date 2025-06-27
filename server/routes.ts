@@ -818,6 +818,101 @@ Crawl-delay: 1`;
     res.send(robotsTxt);
   });
 
+  // Automation control endpoints
+  app.get('/api/automation/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      const { automationService } = await import('./services/automationService');
+      const status = automationService.getStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error fetching automation status:", error);
+      res.status(500).json({ message: "Failed to fetch automation status" });
+    }
+  });
+
+  app.get('/api/automation/metrics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      const { automationService } = await import('./services/automationService');
+      const metrics = automationService.getMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching automation metrics:", error);
+      res.status(500).json({ message: "Failed to fetch automation metrics" });
+    }
+  });
+
+  app.post('/api/automation/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      const { automationService } = await import('./services/automationService');
+      await automationService.startAutomation();
+      res.json({ message: "Automation started successfully" });
+    } catch (error) {
+      console.error("Error starting automation:", error);
+      res.status(500).json({ message: "Failed to start automation" });
+    }
+  });
+
+  app.post('/api/automation/stop', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      const { automationService } = await import('./services/automationService');
+      await automationService.stopAutomation();
+      res.json({ message: "Automation stopped successfully" });
+    } catch (error) {
+      console.error("Error stopping automation:", error);
+      res.status(500).json({ message: "Failed to stop automation" });
+    }
+  });
+
+  app.post('/api/automation/restart', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      const { automationService } = await import('./services/automationService');
+      await automationService.stopAutomation();
+      setTimeout(() => {
+        automationService.startAutomation();
+      }, 2000);
+      
+      res.json({ message: "Automation restarted successfully" });
+    } catch (error) {
+      console.error("Error restarting automation:", error);
+      res.status(500).json({ message: "Failed to restart automation" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

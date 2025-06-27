@@ -17,6 +17,7 @@ import Portfolio from "@/pages/Portfolio";
 import Profile from "@/pages/Profile";
 import Analytics from "@/pages/Analytics";
 import SystemHealth from "@/pages/SystemHealth";
+import AutomationControl from "@/pages/AutomationControl";
 import NotFound from "@/pages/not-found";
 
 import { queryClient } from "@/lib/queryClient";
@@ -141,6 +142,7 @@ function App() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/system-health" element={<SystemHealth />} />
+        <Route path="/automation" element={<AutomationControl />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     

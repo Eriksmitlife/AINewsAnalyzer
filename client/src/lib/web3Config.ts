@@ -211,7 +211,7 @@ export const formatBalance = (balance: string | number, decimals = 4): string =>
 
 export const getNetworkName = (chainId: number): string => {
   const network = SUPPORTED_NETWORKS.find(n => n.chainId === chainId);
-  rereturn network?.name || 'Unknown Network';
+  return network?.name || 'Unknown Network';
 };
 
 export const getTokenBySymbol = (symbol: string, chainId: number) => {
