@@ -17,7 +17,8 @@ import {
   Sword,
   Crown,
   Diamond,
-  Flame
+  Flame,
+  CheckCircle
 } from "lucide-react";
 
 export default function Landing() {
@@ -276,26 +277,146 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="relative py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400 mb-4">
+              ТАРИФНЫЕ ПЛАНЫ
+            </h2>
+            <p className="text-xl text-gray-400">
+              Выберите свой путь к доминированию
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "STARTER",
+                price: "FREE",
+                period: "Навсегда",
+                features: ["5 AI анализов в день", "Базовые NFT", "Доступ к маркетплейсу", "Сообщество"],
+                color: "from-gray-600 to-gray-800",
+                popular: false
+              },
+              {
+                name: "PRO",
+                price: "$29",
+                period: "в месяц",
+                features: ["Безлимитные AI анализы", "Премиум NFT", "Приоритетная поддержка", "Расширенная аналитика", "VIP доступ"],
+                color: "from-purple-600 to-pink-600",
+                popular: true
+              },
+              {
+                name: "LEGEND",
+                price: "$99",
+                period: "в месяц",
+                features: ["Все возможности PRO", "Квантовый ИИ анализ", "Белый лейбл", "Личный менеджер", "API доступ"],
+                color: "from-yellow-500 to-orange-500",
+                popular: false
+              }
+            ].map((plan, index) => (
+              <div key={index} className={`relative ${plan.popular ? 'scale-105' : ''}`}>
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
+                      🔥 ПОПУЛЯРНЫЙ
+                    </Badge>
+                  </div>
+                )}
+                <div className={`bg-black/30 backdrop-blur-xl border-2 ${plan.popular ? 'border-purple-500' : 'border-gray-700'} rounded-2xl p-8 text-center`}>
+                  <h3 className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${plan.color} mb-4`}>
+                    {plan.name}
+                  </h3>
+                  <div className="mb-6">
+                    <span className="text-4xl font-black text-white">{plan.price}</span>
+                    <span className="text-gray-400 text-lg">/{plan.period}</span>
+                  </div>
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, fIndex) => (
+                      <li key={fIndex} className="flex items-center gap-2 text-gray-300">
+                        <CheckCircle className="w-5 h-5 text-green-400" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button 
+                    onClick={handleLogin}
+                    className={`w-full py-3 bg-gradient-to-r ${plan.color} text-white font-bold rounded-lg hover:scale-105 transition-all duration-300`}
+                  >
+                    ВЫБРАТЬ ПЛАН
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="relative py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400 mb-4">
+              ЧАСТЫЕ ВОПРОСЫ
+            </h2>
+          </div>
+
+          <div className="space-y-6">
+            {[
+              {
+                q: "Что такое AutoNews.AI?",
+                a: "AutoNews.AI - это революционная платформа, которая использует квантовый ИИ для анализа новостей и автоматического создания NFT из актуальной информации."
+              },
+              {
+                q: "Как работает создание NFT из новостей?",
+                a: "Наша система анализирует новости в реальном времени, оценивает их важность и вирусный потенциал, а затем автоматически создает уникальные NFT с метаданными и визуализацией."
+              },
+              {
+                q: "Можно ли зарабатывать на платформе?",
+                a: "Да! Пользователи зарабатывают через торговлю NFT, участие в аукционах, стейкинг ANC токенов и реферальную программу."
+              },
+              {
+                q: "Что такое квантовый ИИ анализ?",
+                a: "Это передовая технология анализа, использующая 4 ИИ-личности для многомерной оценки новостей по эмоциональному, социальному, экономическому, временному и технологическому измерениям."
+              }
+            ].map((faq, index) => (
+              <div key={index} className="bg-black/30 backdrop-blur-xl border border-blue-500/30 rounded-xl p-6">
+                <h4 className="text-xl font-bold text-white mb-3">{faq.q}</h4>
+                <p className="text-gray-400">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="relative py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 mb-8">
-            READY TO BECOME A LEGEND?
+            ГОТОВЫ СТАТЬ ЛЕГЕНДОЙ?
           </h2>
           <p className="text-xl text-gray-300 mb-12">
-            Join the elite squad of news warriors and conquer the information age
+            Присоединяйтесь к элитному отряду новостных воинов и покорите информационную эпоху
           </p>
-          <Button 
-            onClick={handleLogin}
-            className="group relative px-16 py-8 text-2xl font-black rounded-xl overflow-hidden transform hover:scale-110 transition-all duration-300"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 animate-gradient-x"></div>
-            <span className="relative z-10 flex items-center gap-3">
-              <Crown className="w-8 h-8" />
-              CLAIM YOUR THRONE
-              <Crown className="w-8 h-8" />
-            </span>
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <Button 
+              onClick={handleLogin}
+              className="group relative px-16 py-8 text-2xl font-black rounded-xl overflow-hidden transform hover:scale-110 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 animate-gradient-x"></div>
+              <span className="relative z-10 flex items-center gap-3">
+                <Crown className="w-8 h-8" />
+                ЗАХВАТИТЬ ТРОН
+                <Crown className="w-8 h-8" />
+              </span>
+            </Button>
+            <div className="text-center">
+              <div className="text-green-400 font-bold text-lg">✅ Бесплатная регистрация</div>
+              <div className="text-gray-400">✅ Без скрытых платежей</div>
+              <div className="text-gray-400">✅ Начните зарабатывать сегодня</div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

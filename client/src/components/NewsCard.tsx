@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -18,12 +18,29 @@ import {
   Play,
   Pause,
   Volume2,
-  Zap
+  Zap,
+  Share2,
+  Bookmark
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface NewsCardProps {
-  article: any;
+  article: {
+    id: string;
+    title: string;
+    content?: string;
+    summary?: string;
+    category: string;
+    publishedAt: string;
+    sourceUrl?: string;
+    viewCount?: number;
+    sentiment?: string;
+    aiScore?: number;
+    imageUrl?: string;
+    author?: string;
+    tags?: string[];
+    readingTime?: number;
+  };
   compact?: boolean;
 }
 
@@ -123,280 +140,240 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
     },
   });
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
+  const getSentimentColor = (sentiment?: string) => {
+    switch (sentiment) {
+      case 'positive': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200';
+      case 'negative': return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400 border-red-200';
+      case 'neutral': return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400 border-gray-200';
+      default: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400 border-blue-200';
+    }
+  };
+
+  const getSentimentText = (sentiment?: string) => {
+    switch (sentiment) {
+      case 'positive': return 'Позитивные';
+      case 'negative': return 'Негативные';
+      case 'neutral': return 'Нейтральные';
+      default: return 'Анализируется';
+    }
   };
 
   const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      "AI & Technology": "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      "Finance & Crypto": "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      "Startups": "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      "Science": "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-      "Business": "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+    const colors: { [key: string]: string } = {
+      'Technology': 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400',
+      'Business': 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400',
+      'Science': 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400',
+      'Politics': 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400',
+      'Sports': 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400',
+      'Entertainment': 'bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400',
+      'Health': 'bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-400',
+      'Finance': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
     };
-    return colors[category] || "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+    return colors[category] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
   };
 
   if (compact) {
     return (
-      <article className="glass-card hover-lift p-4 rounded-lg transition-all">
-        <div className="flex items-start gap-4">
-          {article.imageUrl && (
-            <img 
-              src={article.imageUrl} 
-              alt={article.title}
-              className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-            />
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-2 mb-2">
-              <Badge className={`badge-category ${getCategoryColor(article.category)}`}>
-                {article.category}
-              </Badge>
-              {article.isVerified && (
-                <Badge className="badge-verified">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Verified
+      <Card className="news-card hover:shadow-lg transition-all duration-300 border-l-4 border-l-primary/20 hover:border-l-primary">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            {article.imageUrl && (
+              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                <img 
+                  src={article.imageUrl} 
+                  alt={article.title}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className={`text-xs ${getCategoryColor(article.category)}`}>
+                  {article.category}
                 </Badge>
-              )}
-            </div>
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">
-              {article.title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-              {article.summary || article.content?.substring(0, 150) + '...'}
-            </p>
-            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-              <div className="flex items-center space-x-4">
-                <span>{article.author || 'Unknown'}</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {formatTimeAgo(article.publishedAt || article.createdAt)}
-                </span>
-                {article.aiScore && (
-                  <div className="flex items-center space-x-1">
-                    <Brain className="w-3 h-3 text-purple-500" />
-                    <span>AI Score: {Math.round(Number(article.aiScore) * 100)}%</span>
-                  </div>
+                {article.sentiment && (
+                  <Badge className={`text-xs ${getSentimentColor(article.sentiment)}`}>
+                    {getSentimentText(article.sentiment)}
+                  </Badge>
+                )}
+                {article.readingTime && (
+                  <Badge variant="outline" className="text-xs">
+                    {article.readingTime} мин
+                  </Badge>
                 )}
               </div>
-              <div className="flex items-center space-x-2">
-                <button 
-                  onClick={() => favoriteMutation.mutate()}
-                  disabled={favoriteMutation.isPending}
-                  className="hover:text-red-600 transition-colors"
-                >
-                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} />
-                </button>
-                <button 
-                  onClick={() => generateNftMutation.mutate()}
-                  disabled={generateNftMutation.isPending}
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  <Palette className="w-4 h-4" />
-                </button>
+              <h3 className="font-semibold text-sm line-clamp-2 mb-2 hover:text-primary transition-colors cursor-pointer">
+                {article.title}
+              </h3>
+              {article.summary && (
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                  {article.summary}
+                </p>
+              )}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span>{formatDate(article.publishedAt)}</span>
+                  {article.author && (
+                    <span className="text-primary">• {article.author}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <Eye className="w-3 h-3" />
+                    {(article.viewCount || 0).toLocaleString()}
+                  </div>
+                  {article.aiScore && (
+                    <div className="flex items-center gap-1">
+                      <Brain className="w-3 h-3 text-purple-500" />
+                      {Math.round(article.aiScore * 100)}%
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </article>
+        </CardContent>
+      </Card>
     );
   }
 
-  const extractAds = (content: string) => {
-    const adPattern = /\[AD\](.*?)(?=\n|$)/g;
-    const ads = [];
-    let match;
-
-    while ((match = adPattern.exec(content)) !== null) {
-      ads.push(match[1].trim());
-    }
-
-    return {
-      ads,
-      cleanContent: content.replace(adPattern, '').trim()
-    };
-  };
-
-  const { ads, cleanContent } = extractAds(article.content || '');
-  const summary = article.summary || cleanContent.substring(0, 200) + '...';
-
   return (
-    <div className="card-modern hover-lift">
+    <Card className="news-card hover:shadow-xl transition-all duration-300 group overflow-hidden">
       {article.imageUrl && (
-        <div className="relative overflow-hidden rounded-t-lg">
+        <div className="relative h-48 overflow-hidden">
           <img 
             src={article.imageUrl} 
             alt={article.title}
-            className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute top-2 left-2">
-            <Badge className={`${getCategoryColor(article.category)} backdrop-blur-sm`}>
-              {article.category}
-            </Badge>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute bottom-4 left-4 right-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge className={getCategoryColor(article.category)}>
+                {article.category}
+              </Badge>
+              {article.sentiment && (
+                <Badge className={getSentimentColor(article.sentiment)}>
+                  {getSentimentText(article.sentiment)}
+                </Badge>
+              )}
+            </div>
+          </div>
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <Button size="sm" variant="secondary" className="h-8 w-8 p-0 backdrop-blur-sm">
+              <Heart className="w-4 h-4" />
+            </Button>
+            <Button size="sm" variant="secondary" className="h-8 w-8 p-0 backdrop-blur-sm">
+              <Bookmark className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="p-6 space-y-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          {!article.imageUrl && (
-            <Badge className={`${getCategoryColor(article.category)}`}>
-              {article.category}
-            </Badge>
-          )}
-          {article.isVerified && (
-            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Verified
-            </Badge>
-          )}
-          {Number(article.trendingScore) > 0.7 && (
-            <Badge className="badge-trending">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              Trending
-            </Badge>
-          )}
-        </div>
-
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2">
-          {article.title}
-        </h3>
-
-        <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
-          {summary}
-        </p>
-
-        {ads.length > 0 && (
-          <div className="border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-r-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-yellow-600" />
-              <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Спонсорский контент</span>
-            </div>
-            {ads.map((ad, index) => (
-              <p key={index} className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
-                {ad}
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            {!article.imageUrl && (
+              <div className="flex items-center gap-2 mb-3">
+                <Badge className={getCategoryColor(article.category)}>
+                  {article.category}
+                </Badge>
+                {article.sentiment && (
+                  <Badge className={getSentimentColor(article.sentiment)}>
+                    {getSentimentText(article.sentiment)}
+                  </Badge>
+                )}
+                {article.aiScore && article.aiScore > 0.8 && (
+                  <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
+                    <Brain className="w-3 h-3 mr-1" />
+                    Высокий AI скор
+                  </Badge>
+                )}
+              </div>
+            )}
+            <CardTitle className="text-lg group-hover:text-primary transition-colors leading-tight">
+              {article.title}
+            </CardTitle>
+            {article.author && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Автор: <span className="text-primary font-medium">{article.author}</span>
               </p>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {article.summary && (
+          <p className="text-muted-foreground line-clamp-3 leading-relaxed">
+            {article.summary}
+          </p>
+        )}
+
+        {article.tags && article.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {article.tags.slice(0, 3).map((tag, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                #{tag}
+              </Badge>
             ))}
+            {article.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{article.tags.length - 3} еще
+              </Badge>
+            )}
           </div>
         )}
 
-        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center space-x-4">
-              <span>{article.author || 'Unknown'}</span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {formatTimeAgo(article.publishedAt || article.createdAt)}
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {article.viewCount || 0}
-              </span>
+        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
+          <div className="flex items-center gap-1">
+            <span>{formatDate(article.publishedAt)}</span>
+            {article.readingTime && (
+              <span>• {article.readingTime} мин чтения</span>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer">
+              <Eye className="w-4 h-4" />
+              {(article.viewCount || 0).toLocaleString()}
             </div>
-        </div>
-
-        {(article.aiScore || article.sentimentScore || article.factCheckScore) && (
-          <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              <TrendingUp className="w-4 h-4 text-green-500" />
+              Трендинг
+            </div>
             {article.aiScore && (
               <div className="flex items-center gap-1">
-                <Brain className="w-3 h-3 text-purple-500" />
-                <span>AI: {Math.round(Number(article.aiScore) * 100)}%</span>
-              </div>
-            )}
-            {article.sentimentScore && (
-              <div className="flex items-center gap-1">
-                <div className={`w-2 h-2 rounded-full ${
-                  article.sentiment === 'positive' ? 'bg-green-500' : 
-                  article.sentiment === 'negative' ? 'bg-red-500' : 'bg-gray-500'
-                }`}></div>
-                <span>Sentiment: {Math.round(Number(article.sentimentScore) * 100)}%</span>
-              </div>
-            )}
-            {article.factCheckScore && (
-              <div className="flex items-center gap-1">
-                <CheckCircle className="w-3 h-3 text-blue-500" />
-                <span>Fact: {Math.round(Number(article.factCheckScore) * 100)}%</span>
+                <Brain className="w-4 h-4 text-purple-500" />
+                AI: {Math.round(article.aiScore * 100)}%
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center space-x-2">
-            <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => favoriteMutation.mutate()}
-                disabled={favoriteMutation.isPending}
-                className={`hover:text-red-600 ${isFavorited ? 'text-red-500' : ''}`}
-              >
-                <Heart className={`w-4 h-4 mr-1 ${isFavorited ? 'fill-red-500' : ''}`} />
-                {isFavorited ? 'Favorited' : 'Favorite'}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => generateNftMutation.mutate()}
-                disabled={generateNftMutation.isPending}
-                className="hover:text-blue-600"
-              >
-                <Palette className="w-4 h-4 mr-1" />
-                Create NFT
-              </Button>
-
-              {article.musicUrl ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => window.open(article.musicUrl, '_blank')}
-                  className="hover:text-purple-600"
-                  title={`${article.musicStyle} music - ${article.musicMood} mood`}
-                >
-                  <Volume2 className="w-4 h-4 mr-1" />
-                  Play Music
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => generateMusicMutation.mutate()}
-                  disabled={isGeneratingMusic}
-                  className="hover:text-purple-600"
-                >
-                  {isGeneratingMusic ? (
-                    <>
-                      <div className="animate-spin w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full mr-1" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Music className="w-4 h-4 mr-1" />
-                      Generate Music
-                    </>
-                  )}
-                </Button>
-              )}
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.open(article.url, '_blank')}
-            className="hover:text-blue-600"
-          >
-            <ExternalLink className="w-4 h-4 mr-1" />
-            Read More
+        <div className="flex items-center gap-2 pt-3">
+          <Button size="sm" className="flex-1 gap-2">
+            <ExternalLink className="w-4 h-4" />
+            Читать полностью
+          </Button>
+          <Button size="sm" variant="outline" className="gap-2">
+            <Palette className="w-4 h-4" />
+            Создать NFT
+          </Button>
+          <Button size="sm" variant="outline" className="gap-2">
+            <Share2 className="w-4 h-4" />
           </Button>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

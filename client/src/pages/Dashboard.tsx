@@ -19,9 +19,12 @@ export default function Dashboard() {
   const [userLevel, setUserLevel] = useState(47);
   const [experience, setExperience] = useState(73);
   const [achievements, setAchievements] = useState([
-    { id: 1, name: "News Master", icon: "🏆", unlocked: true },
-    { id: 2, name: "AI Analyst", icon: "🧠", unlocked: true },
-    { id: 3, name: "NFT Creator", icon: "🎨", unlocked: false },
+    { id: 1, name: "Мастер Новостей", icon: "🏆", unlocked: true },
+    { id: 2, name: "AI Аналитик", icon: "🧠", unlocked: true },
+    { id: 3, name: "NFT Создатель", icon: "🎨", unlocked: true },
+    { id: 4, name: "Трейдер", icon: "💎", unlocked: true },
+    { id: 5, name: "Инвестор", icon: "📈", unlocked: false },
+    { id: 6, name: "Влиятельная Личность", icon: "👑", unlocked: false },
   ]);
   const { user } = useAuth();
 
