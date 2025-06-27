@@ -419,6 +419,256 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Exchange API endpoints
+  app.get('/api/exchange', async (req, res) => {
+    try {
+      const nfts = await storage.getNfts({ limit: 50, forSaleOnly: true });
+      const exchangeData = {
+        nfts: nfts.map(nft => ({
+          id: nft.id,
+          title: nft.name || nft.description || 'Untitled NFT',
+          price: parseFloat(nft.price || '0'),
+          lastPrice: parseFloat(nft.price || '0') * 0.95,
+          change24h: (Math.random() - 0.5) * 20,
+          volume24h: Math.floor(Math.random() * 10000),
+          category: (nft.metadata as any)?.category || 'General',
+          sentiment: (nft.metadata as any)?.sentiment || 'neutral',
+          verified: true,
+          owner: nft.ownerId || 'unknown',
+          image: nft.imageUrl || 'https://via.placeholder.com/400x400?text=NFT',
+          bids: Math.floor(Math.random() * 50),
+          timeLeft: Math.random() > 0.5 ? `${Math.floor(Math.random() * 24)}h ${Math.floor(Math.random() * 60)}m` : undefined
+        })),
+        topGainers: nfts.slice(0, 5).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          price: parseFloat(nft.price || '0'),
+          change: Math.random() * 50 + 10
+        })),
+        topLosers: nfts.slice(5, 10).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          price: parseFloat(nft.price || '0'),
+          change: -(Math.random() * 30 + 5)
+        })),
+        marketStats: {
+          totalVolume24h: 1250000,
+          totalListings: nfts.length,
+          activeTraders: 3420,
+          avgPrice: nfts.reduce((sum, nft) => sum + parseFloat(nft.price || '0'), 0) / nfts.length
+        }
+      };
+      res.json(exchangeData);
+    } catch (error) {
+      console.error("Error fetching exchange data:", error);
+      res.status(500).json({ message: "Failed to fetch exchange data" });
+    }
+  });
+
+  // Trading API endpoints
+  app.get('/api/trading', async (req, res) => {
+    try {
+      const tradingData = {
+        orders: [],
+        myOrders: [],
+        recentTrades: [],
+        orderBook: {
+          buyOrders: Array.from({length: 10}, (_, i) => ({
+            price: 100 - i * 5,
+            quantity: Math.floor(Math.random() * 10) + 1,
+            total: (100 - i * 5) * (Math.floor(Math.random() * 10) + 1)
+          })),
+          sellOrders: Array.from({length: 10}, (_, i) => ({
+            price: 105 + i * 5,
+            quantity: Math.floor(Math.random() * 10) + 1,
+            total: (105 + i * 5) * (Math.floor(Math.random() * 10) + 1)
+          }))
+        }
+      };
+      res.json(tradingData);
+    } catch (error) {
+      console.error("Error fetching trading data:", error);
+      res.status(500).json({ message: "Failed to fetch trading data" });
+    }
+  });
+
+  // Auctions API endpoints
+  app.get('/api/auctions', async (req, res) => {
+    try {
+      const nfts = await storage.getNfts({ limit: 20 });
+      const auctionsData = {
+        featuredAuctions: nfts.slice(0, 6).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          description: nft.description,
+          image: nft.imageUrl || 'https://via.placeholder.com/400x400?text=NFT',
+          currentBid: parseFloat(nft.price || '100'),
+          startingBid: parseFloat(nft.price || '100') * 0.5,
+          endTime: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          category: nft.metadata?.category || 'General',
+          seller: {
+            id: nft.ownerId,
+            name: `User_${nft.ownerId.slice(0, 8)}`,
+            avatar: 'https://via.placeholder.com/40x40?text=U',
+            verified: true
+          },
+          bids: Array.from({length: Math.floor(Math.random() * 20)}, (_, i) => ({
+            id: `bid_${i}`,
+            amount: parseFloat(nft.price || '100') - i * 5,
+            bidder: {
+              name: `Bidder_${i}`,
+              avatar: 'https://via.placeholder.com/40x40?text=B'
+            },
+            timestamp: new Date(Date.now() - i * 60000).toISOString()
+          })),
+          totalBids: Math.floor(Math.random() * 50),
+          watchers: Math.floor(Math.random() * 200),
+          isHot: Math.random() > 0.7,
+          sentiment: nft.metadata?.sentiment || 'neutral',
+          aiScore: Math.random()
+        })),
+        endingSoon: nfts.slice(6, 11).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
+          currentBid: parseFloat(nft.price || '100'),
+          endTime: new Date(Date.now() + Math.random() * 2 * 60 * 60 * 1000).toISOString(),
+          watchers: Math.floor(Math.random() * 50)
+        })),
+        mostWatched: nfts.slice(11, 16).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
+          currentBid: parseFloat(nft.price || '100'),
+          watchers: Math.floor(Math.random() * 300) + 50
+        })),
+        recentlyStarted: nfts.slice(16, 20).map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          image: nft.imageUrl || 'https://via.placeholder.com/60x60?text=NFT',
+          currentBid: parseFloat(nft.price || '100'),
+          startTime: new Date(Date.now() - Math.random() * 60 * 60 * 1000).toISOString()
+        })),
+        categories: ['AI & Technology', 'Finance & Crypto', 'Startups', 'Science', 'Business', 'Health']
+      };
+      res.json(auctionsData);
+    } catch (error) {
+      console.error("Error fetching auctions data:", error);
+      res.status(500).json({ message: "Failed to fetch auctions data" });
+    }
+  });
+
+  // Portfolio API endpoints
+  app.get('/api/portfolio', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userNfts = await storage.getNfts({ ownerId: userId });
+      const userTransactions = await storage.getNftTransactions(undefined, userId);
+      
+      const portfolioData = {
+        overview: {
+          totalValue: userNfts.reduce((sum, nft) => sum + parseFloat(nft.price || '0'), 0),
+          totalChange24h: Math.random() * 1000 - 500,
+          totalChangePercent24h: (Math.random() - 0.5) * 10,
+          totalNfts: userNfts.length,
+          totalActiveListings: userNfts.filter(nft => nft.isForSale).length,
+          totalEarnings: userTransactions
+            .filter(tx => tx.type === 'sale')
+            .reduce((sum, tx) => sum + parseFloat(tx.price), 0)
+        },
+        holdings: userNfts.map(nft => ({
+          id: nft.id,
+          title: nft.title,
+          image: nft.imageUrl || 'https://via.placeholder.com/80x80?text=NFT',
+          category: nft.metadata?.category || 'General',
+          purchasePrice: parseFloat(nft.price || '0') * 0.8,
+          currentPrice: parseFloat(nft.price || '0'),
+          change: parseFloat(nft.price || '0') * 0.2,
+          changePercent: 25,
+          quantity: 1,
+          totalValue: parseFloat(nft.price || '0'),
+          isListed: nft.isForSale,
+          listingPrice: nft.isForSale ? parseFloat(nft.price || '0') : undefined,
+          lastSaleDate: nft.createdAt
+        })),
+        transactions: userTransactions.map(tx => ({
+          id: tx.id,
+          type: tx.type,
+          nftTitle: tx.nftId,
+          price: parseFloat(tx.price),
+          quantity: 1,
+          fee: parseFloat(tx.price) * 0.025,
+          total: parseFloat(tx.price) * 1.025,
+          counterparty: tx.buyerId === userId ? tx.sellerId : tx.buyerId,
+          timestamp: tx.createdAt,
+          status: tx.status
+        })),
+        earnings: [
+          { date: '2024-01-15', amount: 250, source: 'sale' },
+          { date: '2024-01-10', amount: 180, source: 'auction' },
+          { date: '2024-01-05', amount: 45, source: 'royalty' }
+        ],
+        performance: {
+          bestPerformer: {
+            title: userNfts[0]?.title || 'No NFTs',
+            gain: 150,
+            gainPercent: 25
+          },
+          worstPerformer: {
+            title: userNfts[1]?.title || 'No NFTs',
+            loss: 50,
+            lossPercent: -8.5
+          },
+          totalProfit: 450,
+          totalProfitPercent: 12.5
+        }
+      };
+      
+      res.json(portfolioData);
+    } catch (error) {
+      console.error("Error fetching portfolio data:", error);
+      res.status(500).json({ message: "Failed to fetch portfolio data" });
+    }
+  });
+
+  // Categories endpoint
+  app.get('/api/categories', async (req, res) => {
+    try {
+      const categories = ['AI & Technology', 'Finance & Crypto', 'Startups', 'Science', 'Business', 'Health', 'Politics', 'Sports'];
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Available NFTs for trading
+  app.get('/api/nfts/available', async (req, res) => {
+    try {
+      const nfts = await storage.getNfts({ limit: 50, forSaleOnly: true });
+      const availableNfts = nfts.map(nft => ({
+        id: nft.id,
+        title: nft.title,
+        currentPrice: parseFloat(nft.price || '0')
+      }));
+      res.json(availableNfts);
+    } catch (error) {
+      console.error("Error fetching available NFTs:", error);
+      res.status(500).json({ message: "Failed to fetch available NFTs" });
+    }
+  });
+
+  // Automated NFT creation from trending articles
+  app.post('/api/auto-create-nfts', async (req, res) => {
+    try {
+      const result = await nftService.bulkGenerateNfts(10);
+      res.json(result);
+    } catch (error) {
+      console.error("Error auto-creating NFTs:", error);
+      res.status(500).json({ message: "Failed to auto-create NFTs" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

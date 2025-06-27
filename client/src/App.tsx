@@ -10,6 +10,10 @@ import News from "@/pages/News";
 import NFTMarketplace from "@/pages/NFTMarketplace";
 import Analytics from "@/pages/Analytics";
 import Profile from "@/pages/Profile";
+import Exchange from "@/pages/Exchange";
+import Trading from "@/pages/Trading";
+import LiveAuctions from "@/pages/LiveAuctions";
+import Portfolio from "@/pages/Portfolio";
 import Layout from "@/components/Layout";
 import NotFound from "@/pages/not-found";
 
@@ -33,6 +37,10 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/news" component={News} />
           <Route path="/nft-marketplace" component={NFTMarketplace} />
+          <Route path="/exchange" component={Exchange} />
+          <Route path="/trading" component={Trading} />
+          <Route path="/auctions" component={LiveAuctions} />
+          <Route path="/portfolio" component={Portfolio} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/profile" component={Profile} />
         </Layout>

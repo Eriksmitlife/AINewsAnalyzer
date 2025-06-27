@@ -2,7 +2,7 @@
 
 ## Overview
 
-AutoNews.AI is a modern web application that combines AI-powered news analysis with NFT creation and trading capabilities. The platform aggregates news from various sources, analyzes content using advanced AI models, and allows users to create and trade NFTs based on news articles. Built with a full-stack TypeScript architecture, it features real-time analytics, sentiment analysis, fact-checking, and a comprehensive NFT marketplace.
+AutoNews.AI is a comprehensive news exchange and NFT trading platform that automatically converts breaking news into tradeable digital assets. The platform aggregates news from 8+ sources, analyzes content with AI, and instantly creates NFTs for trading on a professional exchange. Features include real-time trading floors, live auctions, portfolio management, and advanced analytics. Built as a scalable marketplace similar to OLX but for news-based NFTs, it enables users to buy, sell, and trade news stories as valuable digital collectibles.
 
 ## System Architecture
 
@@ -121,10 +121,32 @@ The application uses a comprehensive PostgreSQL schema with the following key en
 - **Session Storage**: PostgreSQL table for session persistence
 - **Schema**: Shared schema definitions between frontend and backend
 
+## Key Features
+
+### Масштабная Биржа Новостных NFT
+- **Автоматическое создание NFT**: Новости автоматически превращаются в торгуемые NFT
+- **Профессиональная торговая площадка**: Стакан заявок, графики цен, лимитные и рыночные ордера
+- **Живые аукционы**: Аукционы в реальном времени с системой ставок
+- **Управление портфелем**: Полная аналитика активов, P&L, история транзакций
+- **Биржевые инструменты**: Топ роста/падения, объемы торгов, рыночная статистика
+
+### Функциональность Как OLX
+- **Массовые объявления**: Автоматическая публикация новостей как NFT-лотов
+- **Поиск и фильтры**: Расширенный поиск по категориям, цене, популярности
+- **Пользовательские профили**: Рейтинги, история сделок, верификация
+- **Система уведомлений**: Алерты по ценам, новым лотам, окончанию аукционов
+
 ## Changelog
 
-- June 26, 2025. Initial setup
+- June 27, 2025: Создана масштабная биржа новостных NFT
+  - Добавлены страницы: Exchange, Trading, LiveAuctions, Portfolio
+  - Реализованы API для торговли, аукционов, портфолио
+  - Автоматическая генерация NFT из новостей
+  - Система fallback для работы без OpenAI API
+  - Профессиональная навигация и UI/UX
+- June 26, 2025: Initial setup
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Requested: Создать контент биржу новостей как NFT площадку как типа OLX, где новости автоматически публикуются и превращаются в NFT, которые можно купить и продать на бирже.

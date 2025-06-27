@@ -11,17 +11,23 @@ import {
   Microchip,
   Coins,
   Rocket,
-  FlaskRound
+  FlaskRound,
+  Gavel,
+  PieChart,
+  User,
+  DollarSign
 } from "lucide-react";
 
 const navigationItems = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "News Feed", href: "/news", icon: Newspaper },
-  { name: "Trending", href: "/news?category=trending", icon: TrendingUp },
+  { name: "NFT Exchange", href: "/exchange", icon: DollarSign },
+  { name: "Trading Floor", href: "/trading", icon: BarChart3 },
+  { name: "Live Auctions", href: "/auctions", icon: Gavel },
+  { name: "My Portfolio", href: "/portfolio", icon: Wallet },
   { name: "NFT Marketplace", href: "/nft-marketplace", icon: Palette },
-  { name: "Favorites", href: "/profile?tab=favorites", icon: Heart },
-  { name: "My Portfolio", href: "/profile?tab=nfts", icon: Wallet },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Analytics", href: "/analytics", icon: PieChart },
+  { name: "Profile", href: "/profile", icon: User },
 ];
 
 const categories = [
