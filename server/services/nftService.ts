@@ -292,4 +292,163 @@ class NFTService {
   }
 }
 
+// Advanced rarity calculation based on multiple factors
+  calculateAdvancedRarity(article: any, marketData: any): {
+    rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+    rarityScore: number;
+    factors: string[];
+  } {
+    let score = 0;
+    const factors: string[] = [];
+
+    // Content quality factors (40% weight)
+    const factCheckScore = parseFloat(article.factCheckScore || '0.5');
+    const sentimentStrength = Math.abs(parseFloat(article.sentimentScore || '0.5') - 0.5) * 2;
+    
+    if (factCheckScore > 0.8) {
+      score += 20;
+      factors.push('High Credibility');
+    }
+    
+    if (sentimentStrength > 0.6) {
+      score += 15;
+      factors.push('Strong Sentiment');
+    }
+
+    // Trending and viral factors (30% weight)
+    const trendingScore = parseFloat(article.trendingScore || '0.5');
+    if (trendingScore > 0.8) {
+      score += 25;
+      factors.push('Viral Potential');
+    }
+
+    // Source reputation (15% weight)
+    if (article.source?.includes('Reuters') || article.source?.includes('BBC')) {
+      score += 10;
+      factors.push('Premium Source');
+    }
+
+    // Market timing (10% weight)
+    const hoursSincePublished = (Date.now() - new Date(article.publishedAt).getTime()) / (1000 * 60 * 60);
+    if (hoursSincePublished < 1) {
+      score += 8;
+      factors.push('Breaking News');
+    }
+
+    // Special events detection (5% weight)
+    const specialKeywords = ['breakthrough', 'first', 'record', 'unprecedented', 'historic'];
+    const hasSpecialEvent = specialKeywords.some(keyword => 
+      article.title.toLowerCase().includes(keyword) || 
+      (article.content || '').toLowerCase().includes(keyword)
+    );
+    
+    if (hasSpecialEvent) {
+      score += 7;
+      factors.push('Historic Event');
+    }
+
+    // Determine rarity tier
+    let rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+    if (score >= 70) rarity = 'mythic';
+    else if (score >= 55) rarity = 'legendary';
+    else if (score >= 40) rarity = 'epic';
+    else if (score >= 25) rarity = 'rare';
+    else if (score >= 15) rarity = 'uncommon';
+    else rarity = 'common';
+
+    return {
+      rarity,
+      rarityScore: score / 100,
+      factors
+    };
+  }
+
+  // Dynamic pricing based on market conditions
+  calculateDynamicPrice(rarityData: any, marketConditions: any): number {
+    const basePrices = {
+      'common': 0.01,
+      'uncommon': 0.05,
+      'rare': 0.15,
+      'epic': 0.5,
+      'legendary': 2.0,
+      'mythic': 10.0
+    };
+
+    let basePrice = basePrices[rarityData.rarity] || 0.01;
+
+    // Market demand multiplier
+    const demandMultiplier = 1 + (marketConditions.demand || 0) * 0.5;
+    
+    // Trending topic multiplier
+    if (rarityData.factors.includes('Viral Potential')) {
+      basePrice *= 1.5;
+    }
+    
+    // Breaking news premium
+    if (rarityData.factors.includes('Breaking News')) {
+      basePrice *= 2.0;
+    }
+
+    // Apply market conditions
+    const finalPrice = basePrice * demandMultiplier;
+
+    // Ensure reasonable bounds
+    return Math.max(0.001, Math.min(100, finalPrice));
+  }
+
+  // Generate unique visual traits based on article content
+  generateNFTTraits(article: any, rarityData: any): any {
+    const traits = {
+      'Background': this.selectTraitByCategory(article.category),
+      'Frame': this.selectTraitByRarity(rarityData.rarity),
+      'Effect': this.selectTraitBySentiment(article.sentiment),
+      'Badge': rarityData.factors.length > 0 ? rarityData.factors[0] : 'Standard',
+      'Timestamp': new Date(article.publishedAt).toISOString().split('T')[0],
+      'Source': article.author || 'Unknown',
+      'Category': article.category || 'General'
+    };
+
+    // Add special traits for high rarity items
+    if (rarityData.rarity === 'legendary' || rarityData.rarity === 'mythic') {
+      traits['Special'] = 'Holographic';
+      traits['Glow'] = 'Enabled';
+    }
+
+    return traits;
+  }
+
+  private selectTraitByCategory(category: string): string {
+    const categoryTraits = {
+      'AI & Technology': 'Digital Matrix',
+      'Finance & Crypto': 'Golden Coins',
+      'Startups': 'Innovation Grid',
+      'Science': 'Laboratory',
+      'Business': 'Corporate',
+      'Health': 'Medical'
+    };
+    return categoryTraits[category] || 'Standard';
+  }
+
+  private selectTraitByRarity(rarity: string): string {
+    const rarityFrames = {
+      'common': 'Bronze',
+      'uncommon': 'Silver',
+      'rare': 'Gold',
+      'epic': 'Platinum',
+      'legendary': 'Diamond',
+      'mythic': 'Ethereal'
+    };
+    return rarityFrames[rarity] || 'Bronze';
+  }
+
+  private selectTraitBySentiment(sentiment: string): string {
+    const sentimentEffects = {
+      'positive': 'Rising Sparkles',
+      'negative': 'Red Alert',
+      'neutral': 'Steady Pulse'
+    };
+    return sentimentEffects[sentiment] || 'Steady Pulse';
+  }
+}
+
 export const nftService = new NFTService();

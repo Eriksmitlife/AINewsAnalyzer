@@ -1,11 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { setupAuth } from "./replitAuth";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
-import { newsService } from "./services/newsService";
 import { aiService } from "./services/aiService";
+import { newsService } from "./services/newsService";
 import { nftService } from "./services/nftService";
 import { analyticsService } from "./services/analyticsService";
+import { automationService } from "./services/automationService";
+import { realtimeService } from "./services/realtimeService";
+import { marketPredictionService } from "./services/marketPredictionService";
+import { gamificationService } from "./services/gamificationService";
+import { recommendationService } from "./services/recommendationService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateOGImageUrl } from "./services/ogImageService";
@@ -828,7 +833,6 @@ Crawl-delay: 1`;
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
-      const { automationService } = await import('./services/automationService');
       const status = automationService.getStatus();
       res.json(status);
     } catch (error) {
@@ -846,7 +850,6 @@ Crawl-delay: 1`;
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
-      const { automationService } = await import('./services/automationService');
       const metrics = automationService.getMetrics();
       res.json(metrics);
     } catch (error) {
@@ -864,7 +867,6 @@ Crawl-delay: 1`;
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
-      const { automationService } = await import('./services/automationService');
       await automationService.startAutomation();
       res.json({ message: "Automation started successfully" });
     } catch (error) {
@@ -882,7 +884,6 @@ Crawl-delay: 1`;
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
-      const { automationService } = await import('./services/automationService');
       await automationService.stopAutomation();
       res.json({ message: "Automation stopped successfully" });
     } catch (error) {
@@ -900,12 +901,11 @@ Crawl-delay: 1`;
         return res.status(403).json({ message: "Forbidden: Admin access required" });
       }
 
-      const { automationService } = await import('./services/automationService');
       await automationService.stopAutomation();
       setTimeout(() => {
         automationService.startAutomation();
       }, 2000);
-      
+
       res.json({ message: "Automation restarted successfully" });
     } catch (error) {
       console.error("Error restarting automation:", error);
@@ -913,6 +913,106 @@ Crawl-delay: 1`;
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  const server = createServer(app);
+  // Initialize WebSocket service
+  realtimeService.initialize(server);
+
+  // Market Predictions API
+  app.get("/api/market/predictions", async (req, res) => {
+    try {
+      const predictions = await marketPredictionService.generateMarketPredictions();
+      res.json(predictions);
+    } catch (error) {
+      console.error("Error getting market predictions:", error);
+      res.status(500).json({ error: "Failed to get market predictions" });
+    }
+  });
+
+  app.get("/api/market/trending", async (req, res) => {
+    try {
+      const trending = await marketPredictionService.identifyTrendingTopics();
+      res.json(trending);
+    } catch (error) {
+      console.error("Error getting trending topics:", error);
+      res.status(500).json({ error: "Failed to get trending topics" });
+    }
+  });
+
+  // Gamification API
+  app.get("/api/gamification/stats/:userId", async (req, res) => {
+    try {
+      const stats = await gamificationService.getUserStats(req.params.userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting user stats:", error);
+      res.status(500).json({ error: "Failed to get user stats" });
+    }
+  });
+
+  app.post("/api/gamification/check-achievements/:userId", async (req, res) => {
+    try {
+      const newAchievements = await gamificationService.checkAndUnlockAchievements(req.params.userId);
+      res.json({ newAchievements });
+    } catch (error) {
+      console.error("Error checking achievements:", error);
+      res.status(500).json({ error: "Failed to check achievements" });
+    }
+  });
+
+  app.get("/api/gamification/leaderboard", async (req, res) => {
+    try {
+      const category = req.query.category as 'level' | 'earnings' | 'nfts_created';
+      const leaderboard = await gamificationService.getLeaderboard(category);
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error getting leaderboard:", error);
+      res.status(500).json({ error: "Failed to get leaderboard" });
+    }
+  });
+
+  app.post("/api/gamification/daily-reward/:userId", async (req, res) => {
+    try {
+      const result = await gamificationService.claimDailyReward(req.params.userId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error claiming daily reward:", error);
+      res.status(500).json({ error: "Failed to claim daily reward" });
+    }
+  });
+
+  // Recommendations API
+  app.get("/api/recommendations/:userId", async (req, res) => {
+    try {
+      const type = req.query.type as 'articles' | 'nfts' || 'articles';
+      const limit = parseInt(req.query.limit as string) || 10;
+      const recommendations = await recommendationService.getPersonalizedRecommendations(
+        req.params.userId, 
+        type, 
+        limit
+      );
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error getting recommendations:", error);
+      res.status(500).json({ error: "Failed to get recommendations" });
+    }
+  });
+
+  app.get("/api/search/advanced", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      const filters = req.query.filters ? JSON.parse(req.query.filters as string) : {};
+      const results = await recommendationService.advancedSearch(query, filters);
+      res.json(results);
+    } catch (error) {
+      console.error("Error in advanced search:", error);
+      res.status(500).json({ error: "Failed to perform advanced search" });
+    }
+  });
+
+  // Real-time updates endpoint
+  app.get("/api/realtime/stats", (req, res) => {
+    res.json(realtimeService.getStats());
+  });
+
+  return server;
 }
