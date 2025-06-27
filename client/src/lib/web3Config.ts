@@ -1,65 +1,49 @@
-import { configureChains, createConfig } from 'wagmi';
+import { createConfig, http } from 'wagmi';
 import { mainnet, polygon, arbitrum, optimism, base, bsc } from 'wagmi/chains';
 import { 
-  MetaMaskConnector,
-  WalletConnectConnector,
-  CoinbaseWalletConnector,
-  InjectedConnector
+  metaMask,
+  walletConnect,
+  coinbaseWallet,
+  injected
 } from 'wagmi/connectors';
-import { publicProvider } from 'wagmi/providers/public';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
 
-// Configure chains & providers
-const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [mainnet, polygon, arbitrum, optimism, base, bsc],
-  [
-    alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_ID || '' }),
-    publicProvider(),
-  ]
-);
+// Define chains
+const chains = [mainnet, polygon, arbitrum, optimism, base, bsc];
 
 // Configure connectors
 const connectors = [
-  new MetaMaskConnector({
-    chains,
-    options: {
-      shimDisconnect: true,
+  metaMask(),
+  walletConnect({
+    projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'default-project-id',
+    metadata: {
+      name: 'AutoNews.AI',
+      description: 'AI-Powered News Analysis & NFT Trading Platform',
+      url: typeof window !== 'undefined' ? window.location.origin : 'https://localhost:5000',
+      icons: [`${typeof window !== 'undefined' ? window.location.origin : 'https://localhost:5000'}/logo.png`],
     },
   }),
-  new WalletConnectConnector({
-    chains,
-    options: {
-      projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '',
-      metadata: {
-        name: 'AutoNews.AI',
-        description: 'AI-Powered News Analysis & NFT Trading Platform',
-        url: window.location.origin,
-        icons: [`${window.location.origin}/logo.png`],
-      },
-    },
+  coinbaseWallet({
+    appName: 'AutoNews.AI',
+    appLogoUrl: `${typeof window !== 'undefined' ? window.location.origin : 'https://localhost:5000'}/logo.png`,
   }),
-  new CoinbaseWalletConnector({
-    chains,
-    options: {
-      appName: 'AutoNews.AI',
-      appLogoUrl: `${window.location.origin}/logo.png`,
-    },
-  }),
-  new InjectedConnector({
-    chains,
-    options: {
-      name: 'Injected Wallet',
-      shimDisconnect: true,
-    },
-  }),
+  injected(),
 ];
 
 // Create wagmi config
 export const wagmiConfig = createConfig({
-  autoConnect: true,
+  chains,
   connectors,
-  publicClient,
-  webSocketPublicClient,
+  transports: {
+    [mainnet.id]: http(import.meta.env.VITE_ALCHEMY_ID ? 
+      `https://eth-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_ID}` : 
+      undefined
+    ),
+    [polygon.id]: http(),
+    [arbitrum.id]: http(),
+    [optimism.id]: http(),
+    [base.id]: http(),
+    [bsc.id]: http(),
+  },
 });
 
 export { chains };
