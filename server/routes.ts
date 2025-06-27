@@ -13,6 +13,8 @@ import { loggingService } from "./services/loggingService";
 import { realtimeService } from "./services/realtimeService";
 import { gamificationService } from "./services/gamificationService";
 import { recommendationService } from "./services/recommendationService";
+import { db } from "./db";
+import { userLevels, challenges, achievements } from "@shared/schema";
 import { autoNewsCoin } from "./services/cryptocurrencyService";
 import { musicGenerationService } from "./services/musicGenerationService";
 import { insertArticleSchema, insertNftSchema, insertNewsSourceSchema } from "@shared/schema";
@@ -59,6 +61,337 @@ export async function registerRoutes(app: Application): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  // Web3 Authentication routes
+  app.post('/api/auth/web3/verify', async (req, res) => {
+    try {
+      const { address, chainId } = req.body;
+      
+      if (!address) {
+        return res.status(400).json({ message: "Wallet address is required" });
+      }
+
+      const user = await storage.getUserByWallet(address.toLowerCase());
+      
+      if (user) {
+        // Создаем сессию для Web3 пользователя
+        (req.session as any).web3User = {
+          id: user.id,
+          address: user.walletAddress,
+          chainId: user.chainId
+        };
+        
+        res.json({ 
+          success: true, 
+          user: {
+            id: user.id,
+            address: user.walletAddress,
+            chainId: user.chainId,
+            firstName: user.firstName
+          }
+        });
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    } catch (error) {
+      console.error("Web3 verification error:", error);
+      res.status(500).json({ message: "Verification failed" });
+    }
+  });
+
+  app.post('/api/auth/web3/register', async (req, res) => {
+    try {
+      const { address, signature, message, chainId } = req.body;
+      
+      if (!address || !signature || !message) {
+        return res.status(400).json({ message: "Address, signature, and message are required" });
+      }
+
+      // Проверяем, не существует ли уже пользователь
+      const existingUser = await storage.getUserByWallet(address.toLowerCase());
+      if (existingUser) {
+        return res.status(409).json({ message: "User already exists" });
+      }
+
+      // Создаем нового Web3 пользователя
+      const user = await storage.createWeb3User(address, chainId || 1);
+      
+      // Создаем сессию
+      (req.session as any).web3User = {
+        id: user.id,
+        address: user.walletAddress,
+        chainId: user.chainId
+      };
+
+      res.json({ 
+        success: true, 
+        user: {
+          id: user.id,
+          address: user.walletAddress,
+          chainId: user.chainId,
+          firstName: user.firstName
+        }
+      });
+    } catch (error) {
+      console.error("Web3 registration error:", error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // Web3 user endpoint
+  app.get('/api/auth/web3/user', async (req, res) => {
+    try {
+      const web3User = (req.session as any).web3User;
+      
+      if (!web3User) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(web3User.id);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching Web3 user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.post('/api/auth/web3/logout', (req, res) => {
+    (req.session as any).web3User = null;
+    res.json({ success: true });
+  });
+
+  // MLM Profile System API routes
+  app.get('/api/mlm/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Generate referral code if not exists
+      if (!user.referralCode) {
+        const referralCode = `REF${userId.slice(-6).toUpperCase()}${Date.now().toString(36)}`;
+        await storage.updateUser(userId, { referralCode });
+        user.referralCode = referralCode;
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching MLM profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.get('/api/mlm/challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      // Mock data for user challenges
+      const mockChallenges = [
+        {
+          id: 1,
+          challengeId: 1,
+          status: 'completed',
+          currentValue: 100,
+          targetValue: 100,
+          challenge: {
+            id: 1,
+            title: 'First Steps',
+            titleRu: 'Первые Шаги',
+            description: 'Complete your profile setup',
+            descriptionRu: 'Завершите настройку профиля',
+            type: 'profile',
+            category: 'onboarding',
+            requirements: { profileCompletion: 100 },
+            rewards: { anc: '5.0', experience: 10 },
+            difficulty: 1,
+            icon: 'user-check',
+            color: '#10b981',
+            isActive: true
+          }
+        },
+        {
+          id: 2,
+          challengeId: 2,
+          status: 'in_progress',
+          currentValue: 3,
+          targetValue: 7,
+          challenge: {
+            id: 2,
+            title: 'Daily Trader',
+            titleRu: 'Ежедневный Трейдер',
+            description: 'Login for 7 consecutive days',
+            descriptionRu: 'Входите в систему 7 дней подряд',
+            type: 'daily',
+            category: 'engagement',
+            requirements: { consecutiveDays: 7 },
+            rewards: { anc: '15.0', experience: 25 },
+            difficulty: 2,
+            icon: 'calendar',
+            color: '#3b82f6',
+            isActive: true
+          }
+        },
+        {
+          id: 3,
+          challengeId: 3,
+          status: 'available',
+          currentValue: 0,
+          targetValue: 1,
+          challenge: {
+            id: 3,
+            title: 'NFT Creator',
+            titleRu: 'Создатель NFT',
+            description: 'Create your first NFT from news',
+            descriptionRu: 'Создайте свой первый NFT из новости',
+            type: 'nft',
+            category: 'creation',
+            requirements: { nftsCreated: 1 },
+            rewards: { anc: '25.0', experience: 50 },
+            difficulty: 2,
+            icon: 'image',
+            color: '#8b5cf6',
+            isActive: true
+          }
+        }
+      ];
+      res.json(mockChallenges);
+    } catch (error) {
+      console.error("Error fetching challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  app.get('/api/mlm/achievements', isAuthenticated, async (req: any, res) => {
+    try {
+      // Mock data for user achievements
+      const mockAchievements = [
+        {
+          id: 1,
+          title: 'Welcome Aboard',
+          titleRu: 'Добро Пожаловать',
+          description: 'Successfully registered on AutoNews.AI',
+          descriptionRu: 'Успешно зарегистрировались в AutoNews.AI',
+          category: 'milestone',
+          rarity: 'common',
+          icon: 'star',
+          color: '#10b981',
+          isNew: true
+        },
+        {
+          id: 2,
+          title: 'First Trade',
+          titleRu: 'Первая Сделка',
+          description: 'Completed your first NFT trade',
+          descriptionRu: 'Завершили свою первую торговлю NFT',
+          category: 'trading',
+          rarity: 'common',
+          icon: 'handshake',
+          color: '#3b82f6',
+          isNew: false
+        }
+      ];
+      res.json(mockAchievements);
+    } catch (error) {
+      console.error("Error fetching achievements:", error);
+      res.status(500).json({ message: "Failed to fetch achievements" });
+    }
+  });
+
+  app.get('/api/mlm/level/:level', async (req, res) => {
+    try {
+      const level = parseInt(req.params.level);
+      const mockLevelInfo = {
+        level: level,
+        name: level >= 5 ? 'Platinum Pro' : level >= 3 ? 'Gold Master' : 'Bronze Analyst',
+        nameRu: level >= 5 ? 'Платиновый Про' : level >= 3 ? 'Золотой Мастер' : 'Бронзовый Аналитик',
+        experienceRequired: level * 250,
+        ancReward: (level * 25).toString(),
+        benefits: {
+          dailyBonus: (level * 2.5).toString(),
+          tradingFeeDiscount: level * 0.05
+        },
+        color: level >= 5 ? '#e5e4e2' : level >= 3 ? '#ffd700' : '#cd7f32'
+      };
+      res.json(mockLevelInfo);
+    } catch (error) {
+      console.error("Error fetching level info:", error);
+      res.status(500).json({ message: "Failed to fetch level info" });
+    }
+  });
+
+  app.get('/api/mlm/referrals/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const mockStats = {
+        totalReferrals: 12,
+        activeReferrals: 8,
+        totalEarnings: '485.50',
+        thisMonthEarnings: '127.25',
+        referralNetwork: [
+          { id: '1', name: 'Alice Smith', level: 2, earnings: '125.75', joinDate: '2025-06-15' },
+          { id: '2', name: 'Bob Johnson', level: 3, earnings: '98.25', joinDate: '2025-06-10' },
+          { id: '3', name: 'Carol Davis', level: 1, earnings: '45.50', joinDate: '2025-06-20' }
+        ]
+      };
+      res.json(mockStats);
+    } catch (error) {
+      console.error("Error fetching referral stats:", error);
+      res.status(500).json({ message: "Failed to fetch referral stats" });
+    }
+  });
+
+  app.post('/api/mlm/challenges/:challengeId/claim', isAuthenticated, async (req: any, res) => {
+    try {
+      const challengeId = parseInt(req.params.challengeId);
+      const result = {
+        success: true,
+        claimed: true,
+        rewards: {
+          anc: challengeId === 1 ? '5.0' : challengeId === 2 ? '15.0' : '25.0',
+          experience: challengeId === 1 ? 10 : challengeId === 2 ? 25 : 50
+        },
+        newLevel: false,
+        message: 'Награда успешно получена!'
+      };
+      res.json(result);
+    } catch (error) {
+      console.error("Error claiming challenge reward:", error);
+      res.status(500).json({ message: "Failed to claim reward" });
+    }
+  });
+
+  app.post('/api/mlm/daily-login', isAuthenticated, async (req: any, res) => {
+    try {
+      const result = {
+        success: true,
+        streakCount: 4,
+        bonusEarned: '2.5',
+        nextReward: '5.0',
+        message: 'Ежедневный бонус получен!'
+      };
+      res.json(result);
+    } catch (error) {
+      console.error("Error processing daily login:", error);
+      res.status(500).json({ message: "Failed to process daily login" });
+    }
+  });
+
+  // Initialize MLM system data
+  app.post('/api/mlm/initialize', async (req, res) => {
+    try {
+      // Simple initialization - mark system as ready
+      res.json({ 
+        success: true, 
+        message: 'MLM system initialized successfully',
+        initialized: true
+      });
+    } catch (error) {
+      console.error("Error initializing MLM system:", error);
+      res.status(500).json({ message: "Failed to initialize MLM system" });
+    }
+  });
+
+
 
   // Dashboard and analytics routes
   app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {

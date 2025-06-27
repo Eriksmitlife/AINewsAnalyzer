@@ -28,11 +28,15 @@ export default function Dashboard() {
       setExperience(prev => {
         const newXP = prev + 1;
         if (newXP >= 100) {
-          setUserLevel(level => level + 1);
-          toast({
-            title: "LEVEL UP!",
-            description: `You've reached level ${userLevel + 1}!`,
-          });
+          const newLevel = userLevel + 1;
+          setUserLevel(newLevel);
+          // Use setTimeout to prevent state update during render
+          setTimeout(() => {
+            toast({
+              title: "LEVEL UP!",
+              description: `You've reached level ${newLevel}!`,
+            });
+          }, 0);
           return 0;
         }
         return newXP;

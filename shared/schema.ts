@@ -38,6 +38,29 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("user"), // user, admin
+  
+  // Web3 authentication fields
+  walletAddress: varchar("wallet_address").unique(),
+  chainId: integer("chain_id"),
+  authMethod: varchar("auth_method").default("replit"), // 'replit' | 'web3'
+  
+  // MLM Profile System
+  level: integer("level").default(1),
+  experience: integer("experience").default(0),
+  ancBalance: decimal("anc_balance", { precision: 18, scale: 8 }).default("0"),
+  totalEarnings: decimal("total_earnings", { precision: 18, scale: 8 }).default("0"),
+  referralCode: varchar("referral_code").unique(),
+  referredBy: varchar("referred_by"),
+  
+  // Achievements and Status
+  achievementPoints: integer("achievement_points").default(0),
+  currentTitle: varchar("current_title").default("Новичок"),
+  premiumUntil: timestamp("premium_until"),
+  
+  // Activity Tracking
+  lastActive: timestamp("last_active").defaultNow(),
+  dailyLoginStreak: integer("daily_login_streak").default(0),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

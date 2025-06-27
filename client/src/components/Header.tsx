@@ -4,7 +4,7 @@ import { Link, useLocation } from "wouter";
 import { 
   Bell, LogOut, Settings, User, Globe, Palette, Moon, Sun, Zap,
   Menu, X, Home, Newspaper, ShoppingCart, TrendingUp, Gavel, 
-  Briefcase, BarChart3, HeartPulse, Cpu, Bitcoin, UserCircle, Brain
+  Briefcase, BarChart3, HeartPulse, Cpu, Bitcoin, UserCircle, Brain, Trophy
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -65,6 +65,7 @@ export default function Header() {
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/system-health', label: 'System', icon: HeartPulse },
     { href: '/automation', label: 'Automation', icon: Cpu },
+    { href: '/mlm-profile', label: 'MLM Profile', icon: Trophy },
     { href: '/profile', label: 'Profile', icon: UserCircle },
   ];
 

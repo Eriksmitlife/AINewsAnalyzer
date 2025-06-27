@@ -96,6 +96,7 @@ export const securityHeaders = helmet({
       upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
     },
   },
+  crossOriginOpenerPolicy: false, // Отключаем для Web3 кошельков
   crossOriginEmbedderPolicy: false,
   hsts: {
     maxAge: 31536000,

@@ -1,0 +1,40 @@
+[vite] connecting...
+[vite] connected.
+Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+[Reown Config] Failed to fetch remote project configuration. Using local/default values. 
+Error {}
+Warning: Cannot update a component (&#x60;Toaster&#x60;) while rendering a different component (&#x60;Dashboard&#x60;). To locate the bad setState() call inside &#x60;Dashboard&#x60;, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at Dashboard (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/pages/Dashboard.tsx:33:21)
+    at RenderedRoute (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:5455:26)
+    at Routes (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:6188:3)
+    at main
+    at div
+    at Layout (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/components/Layout.tsx:18:26)
+    at AppContent (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/App.tsx?v=tTB8zLfUTCg6pstEGjZEP:198:31)
+    at Router (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:6131:13)
+    at BrowserRouter (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:9149:3)
+    at ThemeProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/lib/themes.ts:105:33)
+    at I18nProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/lib/i18n.ts:172:32)
+    at QueryClientProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DOWFCDB3.js?v=f89127da:2933:3)
+    at Hydrate (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wagmi.js?v=f89127da:284:11)
+    at WagmiProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wagmi.js?v=f89127da:308:11)
+    at AppWrapper
+at Dashboard (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/pages/Dashboard.tsx:33:21)
+at RenderedRoute (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:5455:26)
+at Routes (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:6188:3)
+at main
+at div
+at Layout (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/components/Layout.tsx:18:26)
+at AppContent (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/App.tsx?v=tTB8zLfUTCg6pstEGjZEP:198:31)
+at Router (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:6131:13)
+at BrowserRouter (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/react-router-dom.js?v=f89127da:9149:3)
+at ThemeProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/lib/themes.ts:105:33)
+at I18nProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/src/lib/i18n.ts:172:32)
+at QueryClientProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DOWFCDB3.js?v=f89127da:2933:3)
+at Hydrate (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wagmi.js?v=f89127da:284:11)
+at WagmiProvider (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/@fs/home/runner/workspace/node_modules/.vite/deps/wagmi.js?v=f89127da:308:11)
+at AppWrapper
+at t.value (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://1a54f8b4-fa01-4aa0-92bf-4dc2fd1f167a-00-2rrm7vws1nrlp.kirk.replit.dev:5000/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400

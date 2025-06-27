@@ -33,7 +33,9 @@ import { eq, desc, asc, and, or, like, sql, count, avg, sum } from "drizzle-orm"
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
+  getUserByWallet(walletAddress: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  createWeb3User(walletAddress: string, chainId: number): Promise<User>;
 
   // News operations
   getArticles(params?: {
@@ -101,12 +103,43 @@ export interface IStorage {
   createSubscription(subscription: InsertSubscription): Promise<Subscription>;
   getUserSubscription(userId: string): Promise<Subscription | undefined>;
   updateSubscription(id: string, updates: Partial<InsertSubscription>): Promise<Subscription>;
+
+  // MLM System
+  updateUser(id: string, updates: Partial<any>): Promise<User>;
+  getUserChallenges(userId: string): Promise<any[]>;
+  getUserAchievements(userId: string): Promise<any[]>;
+  getLevelInfo(level: number): Promise<any>;
+  getReferralStats(userId: string): Promise<any>;
+  claimChallengeReward(userId: string, challengeId: number): Promise<any>;
+  processDailyLogin(userId: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
   // User operations (mandatory for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByWallet(walletAddress: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.walletAddress, walletAddress));
+    return user;
+  }
+
+  async createWeb3User(walletAddress: string, chainId: number): Promise<User> {
+    const userId = `web3_${walletAddress.toLowerCase()}_${Date.now()}`;
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        walletAddress: walletAddress.toLowerCase(),
+        chainId,
+        authMethod: "web3",
+        firstName: `User ${walletAddress.slice(0, 6)}`,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
     return user;
   }
 
@@ -518,6 +551,298 @@ export class DatabaseStorage implements IStorage {
       .where(eq(subscriptions.id, id))
       .returning();
     return updatedSubscription;
+  }
+
+  // MLM System Implementation
+  async updateUser(id: string, updates: Partial<any>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async getUserChallenges(userId: string): Promise<any[]> {
+    try {
+      // Get basic challenges data with SQL
+      const result = await db.execute(sql`
+        SELECT 
+          uc.id,
+          uc.challenge_id as "challengeId",
+          uc.status,
+          uc.current_value as "currentValue", 
+          uc.target_value as "targetValue",
+          uc.started_at as "startedAt",
+          uc.completed_at as "completedAt",
+          uc.claimed_at as "claimedAt",
+          c.title,
+          c.title_ru as "titleRu",
+          c.description,
+          c.description_ru as "descriptionRu",
+          c.type,
+          c.category,
+          c.requirements,
+          c.rewards,
+          c.difficulty,
+          c.icon,
+          c.color,
+          c.is_active as "isActive"
+        FROM user_challenges uc
+        LEFT JOIN challenges c ON uc.challenge_id = c.id
+        WHERE uc.user_id = ${userId} AND c.is_active = true
+        ORDER BY uc.started_at DESC
+      `);
+
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        challengeId: row.challengeId,
+        status: row.status,
+        currentValue: row.currentValue || 0,
+        targetValue: row.targetValue || 1,
+        startedAt: row.startedAt,
+        completedAt: row.completedAt,
+        claimedAt: row.claimedAt,
+        challenge: {
+          id: row.challengeId,
+          title: row.title,
+          titleRu: row.titleRu,
+          description: row.description,
+          descriptionRu: row.descriptionRu,
+          type: row.type,
+          category: row.category,
+          requirements: row.requirements,
+          rewards: row.rewards,
+          difficulty: row.difficulty,
+          icon: row.icon,
+          color: row.color,
+          isActive: row.isActive
+        }
+      }));
+    } catch (error) {
+      console.error('Error getting user challenges:', error);
+      return [];
+    }
+  }
+
+  async getUserAchievements(userId: string): Promise<any[]> {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          ua.id,
+          ua.achievement_id as "achievementId",
+          ua.unlocked_at as "unlockedAt",
+          ua.is_new as "isNew",
+          a.title,
+          a.title_ru as "titleRu", 
+          a.description,
+          a.description_ru as "descriptionRu",
+          a.category,
+          a.rarity,
+          a.icon,
+          a.color,
+          a.requirements,
+          a.rewards
+        FROM user_achievements ua
+        LEFT JOIN achievements a ON ua.achievement_id = a.id
+        WHERE ua.user_id = ${userId}
+        ORDER BY ua.unlocked_at DESC
+      `);
+
+      return result.rows.map((row: any) => ({
+        id: row.achievementId,
+        title: row.title,
+        titleRu: row.titleRu,
+        description: row.description,
+        descriptionRu: row.descriptionRu,
+        category: row.category,
+        rarity: row.rarity,
+        icon: row.icon,
+        color: row.color,
+        requirements: row.requirements,
+        rewards: row.rewards,
+        isNew: row.isNew
+      }));
+    } catch (error) {
+      console.error('Error getting user achievements:', error);
+      return [];
+    }
+  }
+
+  async getLevelInfo(level: number): Promise<any> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM user_levels WHERE level = ${level}
+      `);
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error getting level info:', error);
+      return null;
+    }
+  }
+
+  async getReferralStats(userId: string): Promise<any> {
+    try {
+      const result = await db.execute(sql`
+        SELECT 
+          COUNT(*)::int as "totalReferrals",
+          COUNT(CASE WHEN status = 'active' THEN 1 END)::int as "activeReferrals",
+          COALESCE(SUM(total_earned), 0) as "totalEarnings",
+          COALESCE(SUM(CASE WHEN DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW()) THEN total_earned ELSE 0 END), 0) as "thisMonthEarnings"
+        FROM referrals
+        WHERE referrer_id = ${userId}
+      `);
+
+      const stats = result.rows[0] || {};
+      return {
+        totalReferrals: stats.totalReferrals || 0,
+        activeReferrals: stats.activeReferrals || 0,
+        totalEarnings: stats.totalEarnings || '0',
+        thisMonthEarnings: stats.thisMonthEarnings || '0',
+        referralNetwork: []
+      };
+    } catch (error) {
+      console.error('Error getting referral stats:', error);
+      return {
+        totalReferrals: 0,
+        activeReferrals: 0,
+        totalEarnings: '0',
+        thisMonthEarnings: '0',
+        referralNetwork: []
+      };
+    }
+  }
+
+  async claimChallengeReward(userId: string, challengeId: number): Promise<any> {
+    try {
+      // Check if challenge is completed and not claimed
+      const challengeResult = await db.execute(sql`
+        SELECT uc.*, c.rewards, c.title, c.title_ru
+        FROM user_challenges uc
+        LEFT JOIN challenges c ON uc.challenge_id = c.id
+        WHERE uc.user_id = ${userId} AND uc.challenge_id = ${challengeId} AND uc.status = 'completed'
+      `);
+
+      if (challengeResult.rows.length === 0) {
+        throw new Error('Challenge not completed or already claimed');
+      }
+
+      const challenge = challengeResult.rows[0];
+      const rewards = challenge.rewards || {};
+      const ancReward = parseFloat(rewards.anc || 0);
+      const xpReward = parseInt(rewards.xp || 0);
+
+      // Update user challenge status
+      await db.execute(sql`
+        UPDATE user_challenges 
+        SET status = 'claimed', claimed_at = NOW()
+        WHERE user_id = ${userId} AND challenge_id = ${challengeId}
+      `);
+
+      // Update user balance and experience
+      await db.execute(sql`
+        UPDATE users 
+        SET 
+          anc_balance = COALESCE(anc_balance, 0) + ${ancReward},
+          experience = COALESCE(experience, 0) + ${xpReward},
+          total_earnings = COALESCE(total_earnings, 0) + ${ancReward},
+          updated_at = NOW()
+        WHERE id = ${userId}
+      `);
+
+      // Create reward transaction
+      await db.execute(sql`
+        INSERT INTO reward_transactions (
+          user_id, type, source_id, anc_amount, experience_points,
+          description, description_ru, status, processed_at, created_at
+        ) VALUES (
+          ${userId}, 'challenge_reward', ${challengeId.toString()}, ${ancReward.toString()}, ${xpReward},
+          ${`Challenge reward: ${challenge.title}`}, ${`Награда за вызов: ${challenge.title_ru}`}, 
+          'completed', NOW(), NOW()
+        )
+      `);
+
+      return {
+        success: true,
+        ancReward,
+        xpReward,
+        message: 'Reward claimed successfully'
+      };
+    } catch (error) {
+      console.error('Error claiming challenge reward:', error);
+      throw error;
+    }
+  }
+
+  async processDailyLogin(userId: string): Promise<any> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const today = new Date().toDateString();
+      const lastActive = user.lastActive ? new Date(user.lastActive).toDateString() : null;
+
+      // Check if already logged in today
+      if (lastActive === today) {
+        return {
+          success: false,
+          message: 'Already claimed daily bonus today'
+        };
+      }
+
+      // Calculate streak
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const isConsecutive = lastActive === yesterday.toDateString();
+      const newStreak = isConsecutive ? (user.dailyLoginStreak || 0) + 1 : 1;
+
+      // Calculate rewards based on streak
+      const baseAnc = 5;
+      const baseXp = 10;
+      const streakMultiplier = Math.min(newStreak / 10 + 1, 3); // Max 3x multiplier
+      const ancReward = Math.floor(baseAnc * streakMultiplier);
+      const xpReward = Math.floor(baseXp * streakMultiplier);
+
+      // Update user
+      await db.execute(sql`
+        UPDATE users 
+        SET 
+          last_active = NOW(),
+          daily_login_streak = ${newStreak},
+          anc_balance = COALESCE(anc_balance, 0) + ${ancReward},
+          experience = COALESCE(experience, 0) + ${xpReward},
+          total_earnings = COALESCE(total_earnings, 0) + ${ancReward},
+          updated_at = NOW()
+        WHERE id = ${userId}
+      `);
+
+      // Create reward transaction
+      await db.execute(sql`
+        INSERT INTO reward_transactions (
+          user_id, type, anc_amount, experience_points,
+          description, description_ru, metadata, status, processed_at, created_at
+        ) VALUES (
+          ${userId}, 'daily_login', ${ancReward.toString()}, ${xpReward},
+          ${`Daily login bonus (Day ${newStreak})`}, ${`Ежедневный бонус (День ${newStreak})`},
+          ${JSON.stringify({ streak: newStreak, multiplier: streakMultiplier })},
+          'completed', NOW(), NOW()
+        )
+      `);
+
+      return {
+        success: true,
+        ancReward,
+        experienceReward: xpReward,
+        streak: newStreak,
+        multiplier: streakMultiplier,
+        message: `Daily bonus claimed! Day ${newStreak} streak`
+      };
+    } catch (error) {
+      console.error('Error processing daily login:', error);
+      throw error;
+    }
   }
 }
 

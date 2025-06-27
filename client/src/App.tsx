@@ -15,6 +15,7 @@ import Trading from "@/pages/Trading";
 import LiveAuctions from "@/pages/LiveAuctions";
 import Portfolio from "@/pages/Portfolio";
 import Profile from "@/pages/Profile";
+import MLMProfile from "@/pages/MLMProfile";
 import Analytics from "@/pages/Analytics";
 import SystemHealth from "@/pages/SystemHealth";
 import AutomationControl from "@/pages/AutomationControl";
@@ -89,6 +90,7 @@ function AppContent() {
         <Route path="/auctions" element={<LiveAuctions />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/mlm-profile" element={<MLMProfile />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/system-health" element={<SystemHealth />} />
         <Route path="/automation" element={<AutomationControl />} />
