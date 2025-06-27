@@ -130,3 +130,38 @@ class ThemeService {
 }
 
 export const themeService = new ThemeService();
+
+// React Provider Component
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+
+const ThemeContext = createContext<{
+  theme: Theme;
+  setTheme: (themeId: string) => void;
+}>({
+  theme: THEMES[0],
+  setTheme: () => {},
+});
+
+export const useTheme = () => useContext(ThemeContext);
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setThemeState] = useState(themeService.getCurrentTheme());
+
+  useEffect(() => {
+    const unsubscribe = themeService.subscribe(() => {
+      setThemeState(themeService.getCurrentTheme());
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const setTheme = (themeId: string) => {
+    themeService.setTheme(themeId);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}

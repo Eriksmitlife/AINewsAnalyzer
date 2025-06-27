@@ -180,3 +180,44 @@ class I18nService {
 }
 
 export const i18n = new I18nService();
+
+// React Provider Component
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+
+const I18nContext = createContext<{
+  language: string;
+  translate: (key: string) => string;
+  setLanguage: (language: string) => void;
+}>({
+  language: 'en',
+  translate: (key: string) => key,
+  setLanguage: () => {},
+});
+
+export const useI18n = () => useContext(I18nContext);
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [language, setLanguageState] = useState(i18n.getCurrentLanguage());
+
+  useEffect(() => {
+    const unsubscribe = i18n.subscribe(() => {
+      setLanguageState(i18n.getCurrentLanguage());
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const setLanguage = (lang: string) => {
+    i18n.setLanguage(lang);
+  };
+
+  const translate = (key: string) => {
+    return i18n.translate(key);
+  };
+
+  return (
+    <I18nContext.Provider value={{ language, translate, setLanguage }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
