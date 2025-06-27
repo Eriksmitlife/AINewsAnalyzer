@@ -137,12 +137,32 @@ app.use((req, res, next) => {
 
   // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
-    loggingService.critical('Uncaught exception', error);
+    console.error('Uncaught exception:', error);
     process.exit(1);
   });
 
   process.on('unhandledRejection', (reason, promise) => {
-    loggingService.critical('Unhandled rejection', reason as Error, { promise });
-    process.exit(1);
+    console.error('Unhandled rejection:', reason);
   });
+
+  // Запуск автономных систем самомасштабирования и продвижения
+  setTimeout(async () => {
+    try {
+      console.log('🚀 Инициализация автономных систем AutoNews.AI...');
+      
+      // Запуск системы автопродвижения
+      const { autoPromotionService } = await import('./services/autoPromotionService');
+      await autoPromotionService.startAutoPromotion();
+      console.log('✅ Система автопродвижения активирована');
+      
+      // Запуск системы самоэволюции
+      const { selfEvolvingService } = await import('./services/selfEvolvingService');
+      await selfEvolvingService.startEvolution();
+      console.log('✅ Система самоэволюции активирована');
+      
+      console.log('🧬 Все автономные системы успешно запущены');
+    } catch (error) {
+      console.error('❌ Ошибка запуска автономных систем:', error);
+    }
+  }, 5000); // Запуск через 5 секунд после старта сервера
 })();
