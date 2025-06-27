@@ -216,8 +216,6 @@ export const getNetworkName = (chainId: number): string => {
 
 export const getTokenBySymbol = (symbol: string, chainId: number) => {
   return SUPPORTED_TOKENS.find(token => 
-    token.symbol === symbol && token.addresses[chainId]
-  );
-};inId as keyof typeof token.addresses]
+    token.symbol === symbol && token.addresses[chainId as keyof typeof token.addresses]
   );
 };
