@@ -11,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Brain, Download, Palette, TrendingUp, Activity } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { UserStatsCard } from "@/components/UserStatsCard";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -21,6 +23,7 @@ export default function Dashboard() {
     { id: 2, name: "AI Analyst", icon: "🧠", unlocked: true },
     { id: 3, name: "NFT Creator", icon: "🎨", unlocked: false },
   ]);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Simulate XP gain
@@ -184,7 +187,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-        
+
         {/* Achievement Bar */}
         <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <span className="text-sm text-gray-500 dark:text-gray-400">Достижения:</span>
@@ -213,7 +216,7 @@ export default function Dashboard() {
           <Palette className="w-8 h-8 text-purple-500 group-hover:scale-110 transition-transform" />
           <span className="font-medium">Создать NFT</span>
         </button>
-        
+
         <button 
           onClick={() => handleQuickAction('analyzeMarket')}
           className="action-card group h-32 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform"
@@ -221,12 +224,12 @@ export default function Dashboard() {
           <Brain className="w-8 h-8 text-blue-500 group-hover:scale-110 transition-transform" />
           <span className="font-medium">Анализ ИИ</span>
         </button>
-        
+
         <button className="action-card group h-32 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform">
           <Download className="w-8 h-8 text-green-500 group-hover:scale-110 transition-transform" />
           <span className="font-medium">Экспорт</span>
         </button>
-        
+
         <button className="action-card group h-32 flex flex-col items-center justify-center gap-2 hover:scale-105 transition-transform">
           <TrendingUp className="w-8 h-8 text-orange-500 group-hover:scale-110 transition-transform" />
           <span className="font-medium">Аналитика</span>
@@ -307,6 +310,15 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {user && (
+        <div className="grid gap-6 md:grid-cols-3">
+          <UserStatsCard />
+          <div className="md:col-span-2">
+            <AIAnalysisSummary stats={stats} />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Latest News */}

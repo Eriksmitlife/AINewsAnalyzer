@@ -1,7 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { createConfig, WagmiProvider, useAccount, useConnect, useDisconnect } from 'wagmi';
+import { mainnet, polygon, arbitrum } from 'wagmi/chains';
+import { injected, walletConnect, metaMask } from 'wagmi/connectors';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
+
+const config = createConfig({
+  chains: [mainnet, polygon, arbitrum],
+  connectors: [
+    injected(),
+    metaMask(),
+    walletConnect({
+      projectId: process.env.VITE_WALLETCONNECT_PROJECT_ID || 'your-project-id',
+    }),
+  ],
+});
 
 interface Web3User {
   address: string;
@@ -21,6 +34,7 @@ export function useWeb3Auth() {
   const [user, setUser] = useState<Web3User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   // Проверка подключения при загрузке
   useEffect(() => {
@@ -97,47 +111,52 @@ export function useWeb3Auth() {
     }
   };
 
-  // Подключение кошелька
   const connectWallet = async (connectorId?: string) => {
     try {
-      setIsLoading(true);
-      
+      setIsConnecting(true);
+
       const connector = connectorId 
         ? connectors.find(c => c.id === connectorId) 
-        : connectors[0]; // MetaMask по умолчанию
-      
+        : connectors[0];
+
       if (connector) {
-        connect({ connector });
+        await connect({ connector });
       }
     } catch (error) {
-      console.error('Wallet connection failed:', error);
-      toast({
+      console.error('Wallet connection error:', error);
+       toast({
         title: "Ошибка подключения",
         description: "Не удалось подключить кошелек",
         variant: "destructive"
       });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
-  // Отключение кошелька
   const disconnectWallet = () => {
     disconnect();
     setUser(null);
     setIsAuthenticated(false);
-    toast({
+     toast({
       title: "Кошелек отключен",
       description: "Вы успешно вышли из системы",
     });
   };
 
   return {
+    account: address,
     user,
     isLoading: isLoading || isPending,
     isAuthenticated,
     isConnected,
-    connectors,
+    chainId,
     connectWallet,
     disconnectWallet,
+    isConnecting: isConnecting || isPending,
+    connectors,
     verifyWeb3Auth
   };
 }
+
+export { config };

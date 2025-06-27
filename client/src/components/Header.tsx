@@ -4,7 +4,7 @@ import { Link, useLocation } from "wouter";
 import { 
   Bell, LogOut, Settings, User, Globe, Palette, Moon, Sun, Zap,
   Menu, X, Home, Newspaper, ShoppingCart, TrendingUp, Gavel, 
-  Briefcase, BarChart3, HeartPulse, Cpu, Bitcoin, UserCircle, Brain, Trophy
+  Briefcase, BarChart3, HeartPulse, Cpu, Bitcoin, UserCircle, Brain, Trophy, UserPlus
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -21,9 +21,10 @@ import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 import { i18n, SUPPORTED_LANGUAGES } from "@/lib/i18n";
 import { themeService, THEMES } from "@/lib/themes";
+import { AuthModal } from "@/components/AuthModal";
 
 export default function Header() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [location] = useLocation();
   const [currentLang, setCurrentLang] = useState(i18n.getCurrentLanguage());
   const [currentTheme, setCurrentTheme] = useState(themeService.getCurrentTheme());
@@ -138,9 +139,9 @@ export default function Header() {
                 </Link>
               );
             })}
-            
+
             <div className="w-px h-6 bg-gray-700 mx-1" />
-            
+
             {/* Trading Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -164,7 +165,7 @@ export default function Header() {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             {/* Personal Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -188,7 +189,7 @@ export default function Header() {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
-            
+
             {/* Advanced Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -302,19 +303,39 @@ export default function Header() {
 
             {/* User Menu */}
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        {user.email?.[0]?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuItem className="font-normal">
-                    <div className="flex flex-col space-y-1">
+              <div className="flex items-center gap-3">
+                {/* Уведомления */}
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-4 w-4" />
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs"
+                  >
+                    3
+                  </Badge>
+                </Button>
+
+                {/* Баланс ANC */}
+                {user.ancBalance && (
+                  <Badge variant="outline" className="hidden sm:flex items-center gap-1">
+                    <Bitcoin className="h-3 w-3 text-yellow-500" />
+                    {parseFloat(user.ancBalance).toFixed(2)} ANC
+                  </Badge>
+                )}
+
+                {/* Профиль пользователя */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          {user.email?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <div className="flex flex-col space-y-1 p-2">
                       <p className="text-sm font-medium leading-none">
                         {user.email}
                       </p>
@@ -322,31 +343,41 @@ export default function Header() {
                         ID: {user.id}
                       </p>
                     </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{i18n.translate('nav.profile')}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <a href="/api/logout">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>{i18n.translate('nav.profile')}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <a href="/api/logout">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Log out</span>
+                      </a>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
-              <Button asChild size="sm" className="h-8">
-                <a href="/api/login">Sign In</a>
-              </Button>
+              <div className="flex items-center gap-2">
+                <AuthModal>
+                  <Button variant="outline" size="sm">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Регистрация
+                  </Button>
+                </AuthModal>
+                <AuthModal>
+                  <Button size="sm">
+                    Войти
+                  </Button>
+                </AuthModal>
+              </div>
             )}
 
             {/* Mobile menu button */}
@@ -383,7 +414,7 @@ export default function Header() {
                   </Link>
                 );
               })}
-              
+
               {/* Mobile Theme and Language Options */}
               <div className="border-t border-cyan-500/20 mt-4 pt-4 px-4 space-y-2">
                 <div className="flex items-center justify-between">

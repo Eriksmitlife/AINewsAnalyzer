@@ -263,13 +263,37 @@ export const corsMiddleware = (req: Request, res: Response, next: NextFunction) 
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-API-Key');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-API-Key, X-Replit-User-Id, X-Replit-User-Name, X-Replit-User-Roles');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
     return;
+  }
+
+  next();
+};
+
+// Authentication helper middleware
+export const attachUserInfo = (req: Request, res: Response, next: NextFunction) => {
+  // Attach Replit user info if available
+  const replitUserId = req.get('X-Replit-User-Id');
+  const replitUserName = req.get('X-Replit-User-Name');
+  const replitUserRoles = req.get('X-Replit-User-Roles');
+
+  if (replitUserId) {
+    (req as any).replitUser = {
+      id: replitUserId,
+      name: replitUserName,
+      roles: replitUserRoles
+    };
+  }
+
+  // Attach Web3 user info if available from session
+  const web3User = (req.session as any)?.web3User;
+  if (web3User) {
+    (req as any).web3User = web3User;
   }
 
   next();
