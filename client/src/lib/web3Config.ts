@@ -211,11 +211,13 @@ export const formatBalance = (balance: string | number, decimals = 4): string =>
 
 export const getNetworkName = (chainId: number): string => {
   const network = SUPPORTED_NETWORKS.find(n => n.chainId === chainId);
-  return network?.name || 'Unknown Network';
+  rereturn network?.name || 'Unknown Network';
 };
 
 export const getTokenBySymbol = (symbol: string, chainId: number) => {
   return SUPPORTED_TOKENS.find(token => 
-    token.symbol === symbol && token.addresses[chainId as keyof typeof token.addresses]
+    token.symbol === symbol && token.addresses[chainId]
+  );
+};inId as keyof typeof token.addresses]
   );
 };

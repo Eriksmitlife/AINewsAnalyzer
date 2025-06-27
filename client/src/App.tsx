@@ -1,32 +1,29 @@
 import { useState, useEffect } from "react";
-import { Router, Route, Switch } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
-import { i18n } from "@/lib/i18n";
-import { themeService } from "@/lib/themes";
-import { seoOptimizer } from "@/lib/seoOptimizer";
 import Layout from "@/components/Layout";
+
+// Pages
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import News from "@/pages/News";
+import NFTMarketplace from "@/pages/NFTMarketplace";
 import Exchange from "@/pages/Exchange";
 import Trading from "@/pages/Trading";
 import LiveAuctions from "@/pages/LiveAuctions";
 import Portfolio from "@/pages/Portfolio";
-import Analytics from "@/pages/Analytics";
 import Profile from "@/pages/Profile";
+import Analytics from "@/pages/Analytics";
 import SystemHealth from "@/pages/SystemHealth";
 import NotFound from "@/pages/not-found";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+import { queryClient } from "@/lib/queryClient";
+import { ThemeProvider } from "@/lib/themes";
+import { I18nProvider } from "@/lib/i18n";
+import { WagmiProvider } from 'wagmi';
+import { config } from '@/lib/web3Config';
 
 function App() {
   const { user, isLoading } = useAuth();
@@ -133,30 +130,47 @@ function App() {
   }
 
   return (
-    <Layout>
-      <Router>
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/news" component={News} />
-          <Route path="/exchange" component={Exchange} />
-          <Route path="/trading" component={Trading} />
-          <Route path="/auctions" component={LiveAuctions} />
-          <Route path="/portfolio" component={Portfolio} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/system-health" component={SystemHealth} />
-          <Route component={NotFound} />
-        </Switch>
-      </Router>
-    </Layout>
+    
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/exchange" element={<Exchange />} />
+        <Route path="/trading" element={<Trading />} />
+        <Route path="/auctions" element={<LiveAuctions />} />
+        <Route path="/portfolio" element={<Portfolio />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/system-health" element={<SystemHealth />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    
   );
+}
+
+function AppContent() {
+    const { user } = useAuth();
+    return user ? (
+        <Layout>
+            <App />
+        </Layout>
+    ) : (
+        <Navigate to="/landing" replace />
+    );
 }
 
 export default function AppWrapper() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <Toaster />
-    </QueryClientProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider>
+          <ThemeProvider>
+            <Router>
+              <AppContent />
+            </Router>
+            <Toaster />
+          </ThemeProvider>
+        </I18nProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
