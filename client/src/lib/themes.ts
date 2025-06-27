@@ -11,12 +11,16 @@ export interface Theme {
     surface: string;
     text: string;
     border: string;
+    success: string;
+    warning: string;
+    error: string;
   };
   effects: {
     shadows: boolean;
     animations: boolean;
     gradients: boolean;
     blur: boolean;
+    neon: boolean;
   };
 }
 
@@ -24,7 +28,7 @@ export const THEMES: Theme[] = [
   {
     id: 'light',
     name: 'Professional Light',
-    description: 'Clean and modern light theme for professional use',
+    description: 'Чистый и современный светлый дизайн',
     colors: {
       primary: '#3b82f6',
       secondary: '#64748b',
@@ -33,38 +37,22 @@ export const THEMES: Theme[] = [
       surface: '#f8fafc',
       text: '#1e293b',
       border: '#e2e8f0',
+      success: '#10b981',
+      warning: '#f59e0b',
+      error: '#ef4444',
     },
     effects: {
       shadows: true,
       animations: true,
       gradients: false,
       blur: false,
-    },
-  },
-  {
-    id: 'dark',
-    name: 'Premium Dark',
-    description: 'Sleek dark theme with premium feel',
-    colors: {
-      primary: '#6366f1',
-      secondary: '#94a3b8',
-      accent: '#10b981',
-      background: '#0f172a',
-      surface: '#1e293b',
-      text: '#f1f5f9',
-      border: '#334155',
-    },
-    effects: {
-      shadows: true,
-      animations: true,
-      gradients: true,
-      blur: true,
+      neon: false,
     },
   },
   {
     id: 'neon',
     name: 'Cyber Neon',
-    description: 'Futuristic neon theme with vibrant colors',
+    description: 'Футуристический неоновый дизайн с яркими эффектами',
     colors: {
       primary: '#ff0080',
       secondary: '#00ff80',
@@ -73,12 +61,16 @@ export const THEMES: Theme[] = [
       surface: '#1a0033',
       text: '#ffffff',
       border: '#ff0080',
+      success: '#00ff80',
+      warning: '#ffff00',
+      error: '#ff4040',
     },
     effects: {
       shadows: true,
       animations: true,
       gradients: true,
       blur: true,
+      neon: true,
     },
   },
 ];
@@ -107,8 +99,12 @@ class ThemeService {
     const theme = this.getCurrentTheme();
     const root = document.documentElement;
     
-    // Apply dark class for Tailwind CSS
-    if (theme.id === 'dark' || theme.id === 'neon') {
+    // Apply theme class
+    root.classList.remove('theme-light', 'theme-neon');
+    root.classList.add(`theme-${theme.id}`);
+    
+    // Apply dark class for neon theme
+    if (theme.id === 'neon') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
@@ -119,19 +115,11 @@ class ThemeService {
       root.style.setProperty(`--color-${key}`, value);
     });
 
-    // Remove old theme classes but preserve dark class and other important classes
-    const currentClasses = root.className.split(' ');
-    const filteredClasses = currentClasses.filter(cls => !cls.startsWith('theme-'));
-    root.className = filteredClasses.join(' ');
-    
-    // Add new theme class
-    root.classList.add(`theme-${theme.id}`);
-    
-    // Ensure dark class is present if needed
-    if (theme.id === 'dark' || theme.id === 'neon') {
-      if (!root.classList.contains('dark')) {
-        root.classList.add('dark');
-      }
+    // Apply theme effects
+    if (theme.effects.neon) {
+      root.classList.add('neon-effects');
+    } else {
+      root.classList.remove('neon-effects');
     }
 
     // Apply meta theme-color for mobile browsers
