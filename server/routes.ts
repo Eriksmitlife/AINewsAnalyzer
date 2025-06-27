@@ -388,6 +388,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Health check endpoint
+  app.get('/api/health', (req, res) => {
+    try {
+      const healthStatus = {
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        newsCollection: newsService.getHealthStatus(),
+        memory: process.memoryUsage(),
+        env: process.env.NODE_ENV || 'development',
+      };
+      
+      res.json(healthStatus);
+    } catch (error) {
+      console.error("Health check error:", error);
+      res.status(500).json({ 
+        status: 'unhealthy', 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Restart news collection (admin only)
+  app.post('/api/admin/restart-collection', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'admin') {
+        return res.status(403).json({ message: "Forbidden: Admin access required" });
+      }
+
+      newsService.stopNewsCollection();
+      await newsService.scheduleNewsCollection();
+      
+      res.json({ message: "News collection restarted successfully" });
+    } catch (error) {
+      console.error("Error restarting news collection:", error);
+      res.status(500).json({ message: "Failed to restart news collection" });
+    }
+  });
+
   // News sources management (admin only)
   app.get('/api/admin/news-sources', isAuthenticated, async (req: any, res) => {
     try {

@@ -97,7 +97,7 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     return `${Math.floor(diffInHours / 24)}d ago`;
@@ -180,6 +180,24 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
     );
   }
 
+  const extractAds = (content: string) => {
+    const adPattern = /\[AD\](.*?)(?=\n|$)/g;
+    const ads = [];
+    let match;
+
+    while ((match = adPattern.exec(content)) !== null) {
+      ads.push(match[1].trim());
+    }
+
+    return {
+      ads,
+      cleanContent: content.replace(adPattern, '').trim()
+    };
+  };
+
+  const { ads, cleanContent } = extractAds(article.content || '');
+  const summary = article.summary || cleanContent.substring(0, 200) + '...';
+
   return (
     <Card className="news-card">
       <CardContent className="p-6">
@@ -192,7 +210,7 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
             />
           </div>
         )}
-        
+
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge className={`badge-category ${getCategoryColor(article.category)}`}>
@@ -217,8 +235,22 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
           </h3>
 
           <p className="text-gray-600 dark:text-gray-400 line-clamp-3">
-            {article.summary || article.content?.substring(0, 200) + '...'}
+            {summary}
           </p>
+
+          {ads.length > 0 && (
+            <div className="border-l-4 border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-r-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Спонсорский контент</span>
+              </div>
+              {ads.map((ad, index) => (
+                <p key={index} className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">
+                  {ad}
+                </p>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-4">
@@ -272,7 +304,7 @@ export default function NewsCard({ article, compact = false }: NewsCardProps) {
                 <Heart className={`w-4 h-4 mr-1 ${isFavorited ? 'fill-red-500' : ''}`} />
                 {isFavorited ? 'Favorited' : 'Favorite'}
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
