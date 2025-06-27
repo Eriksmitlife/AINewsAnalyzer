@@ -91,9 +91,25 @@ interface ReferralStats {
 }
 
 const iconMap: { [key: string]: any } = {
-  Trophy, Star, Users, Gift, TrendingUp, Calendar,
-  Crown, Flame, BookOpen, Sparkles, Share2, Coins,
-  Award, Target, Zap, ExternalLink
+  trophy: Trophy, 
+  star: Star, 
+  users: Users, 
+  gift: Gift, 
+  trending: TrendingUp, 
+  calendar: Calendar,
+  crown: Crown, 
+  flame: Flame, 
+  book: BookOpen, 
+  sparkles: Sparkles, 
+  share: Share2, 
+  coins: Coins,
+  award: Award, 
+  target: Target, 
+  zap: Zap, 
+  external: ExternalLink,
+  handshake: Users,
+  dollar: DollarSign,
+  check: Check
 };
 
 function MLMProfile() {
