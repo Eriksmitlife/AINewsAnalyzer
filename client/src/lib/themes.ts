@@ -107,14 +107,32 @@ class ThemeService {
     const theme = this.getCurrentTheme();
     const root = document.documentElement;
     
+    // Apply dark class for Tailwind CSS
+    if (theme.id === 'dark' || theme.id === 'neon') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    
     // Apply CSS custom properties
     Object.entries(theme.colors).forEach(([key, value]) => {
       root.style.setProperty(`--color-${key}`, value);
     });
 
-    // Apply theme class
-    root.className = root.className.replace(/theme-\w+/g, '');
+    // Remove old theme classes but preserve dark class and other important classes
+    const currentClasses = root.className.split(' ');
+    const filteredClasses = currentClasses.filter(cls => !cls.startsWith('theme-'));
+    root.className = filteredClasses.join(' ');
+    
+    // Add new theme class
     root.classList.add(`theme-${theme.id}`);
+    
+    // Ensure dark class is present if needed
+    if (theme.id === 'dark' || theme.id === 'neon') {
+      if (!root.classList.contains('dark')) {
+        root.classList.add('dark');
+      }
+    }
 
     // Apply meta theme-color for mobile browsers
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');

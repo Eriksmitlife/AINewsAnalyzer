@@ -50,6 +50,8 @@ export default function Header() {
 
   const handleThemeChange = (themeId: string) => {
     themeService.setTheme(themeId);
+    // Принудительно обновляем состояние компонента
+    setCurrentTheme(themeService.getCurrentTheme());
   };
 
   const navigationGroups = {
@@ -252,13 +254,13 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Theme Selector - Hidden on mobile */}
+            {/* Theme Selector - Visible on all devices */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 px-2 hidden md:flex">
+                <Button variant="ghost" size="sm" className="h-8 px-2 flex">
                   {getThemeIcon(currentTheme.id)}
                   <span className="ml-1 text-sm font-medium hidden lg:inline">
-                    {i18n.translate(`themes.${currentTheme.id}`)}
+                    {currentTheme.name}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
@@ -405,7 +407,7 @@ export default function Header() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const themes = ['light', 'dark', 'neon', 'cyberpunk', 'neural'];
+                      const themes = ['light', 'dark', 'neon'];
                       const currentIndex = themes.indexOf(currentTheme.id);
                       const nextIndex = (currentIndex + 1) % themes.length;
                       handleThemeChange(themes[nextIndex]);
