@@ -9,11 +9,15 @@ import xss from 'xss';
 // Advanced rate limiting configurations
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // Увеличиваем лимит для автономных систем
   message: { error: 'Too many requests from this IP, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
+  skip: (req: Request) => {
+    // Пропускаем rate limiting для localhost и автономных систем
+    return req.ip === '127.0.0.1' || req.ip === '::1' || req.hostname === 'localhost';
+  },
   keyGenerator: (req: Request) => {
     return req.ip || req.connection.remoteAddress || 'unknown';
   }

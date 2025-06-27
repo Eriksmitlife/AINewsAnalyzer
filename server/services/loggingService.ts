@@ -11,13 +11,13 @@ class LoggingService {
   requestLogger(req: Request, res: Response, next: NextFunction) {
     const start = Date.now();
     this.stats.requests++;
-    
+
     res.on('finish', () => {
       const duration = Date.now() - start;
       this.stats.totalDuration += duration;
       console.log(`${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
     });
-    
+
     next();
   }
 
@@ -49,6 +49,16 @@ class LoggingService {
 
   logInfo(message: string, context?: any) {
     this.info(message, context);
+  }
+
+  error(message: string, data?: any): void {
+    this.log('error', message, data);
+  }
+
+  critical(message: string, data?: any): void {
+    this.log('error', `CRITICAL: ${message}`, data);
+    // Немедленное уведомление для критических ошибок
+    console.error(`🚨 CRITICAL ERROR: ${message}`, data);
   }
 }
 
